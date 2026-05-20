@@ -1,0 +1,1831 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PF Dispatch — Mach 2 Studios</title>
+  <style>
+    :root {
+      --bg: #000000;
+      --surface: rgba(255,255,255,0.03);
+      --card: rgba(255,255,255,0.05);
+      --card2: rgba(255,255,255,0.07);
+      --border: rgba(255,255,255,0.08);
+      --border2: rgba(255,255,255,0.12);
+      --text: #f0f0f0;
+      --muted: #666;
+      --muted2: #888;
+      --white: #ffffff;
+      --glass: rgba(255,255,255,0.04);
+      --glass-border: rgba(255,255,255,0.1);
+      --glass-shine: rgba(255,255,255,0.06);
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', system-ui, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* BG ORBS */
+    .bg-orbs {
+      position: fixed; inset:0;
+      pointer-events: none; z-index:0; overflow:hidden;
+    }
+    .orb {
+      position: absolute; border-radius:50%;
+      filter: blur(100px); opacity:0.07;
+    }
+    .orb1 { width:700px;height:700px;background:radial-gradient(circle,#fff,transparent);top:-200px;left:-200px;animation:d1 20s ease-in-out infinite alternate; }
+    .orb2 { width:500px;height:500px;background:radial-gradient(circle,#fff,transparent);bottom:-100px;right:-100px;animation:d2 25s ease-in-out infinite alternate; }
+    .orb3 { width:400px;height:400px;background:radial-gradient(circle,#aaa,transparent);top:40%;left:60%;animation:d3 18s ease-in-out infinite alternate;opacity:0.04; }
+    @keyframes d1{from{transform:translate(0,0)}to{transform:translate(80px,100px)}}
+    @keyframes d2{from{transform:translate(0,0)}to{transform:translate(-60px,-80px)}}
+    @keyframes d3{from{transform:translate(-50%,-50%)scale(1)}to{transform:translate(-50%,-50%)scale(1.4)}}
+
+    /* TOPBAR */
+    .topbar {
+      background: rgba(0,0,0,0.7);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 54px;
+      position: sticky; top:0; z-index:200;
+    }
+
+    .topbar-left { display:flex; align-items:center; gap:20px; }
+
+    .brand { display:flex; align-items:center; gap:10px; }
+    .brand-logo { width:36px;height:36px;border-radius:9px;object-fit:cover; box-shadow:0 2px 12px rgba(255,255,255,0.1); }
+    .brand-name { font-size:0.95rem;font-weight:800;color:var(--white); }
+    .brand-sub { font-size:0.62rem;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase; }
+
+    .topbar-nav { display:flex;gap:2px; }
+    .topbar-link {
+      padding:6px 14px; border-radius:7px;
+      font-size:0.8rem; color:var(--muted); cursor:pointer;
+      border:1px solid transparent; background:transparent;
+      font-family:inherit; transition:all 0.15s;
+    }
+    .topbar-link:hover { color:var(--text); background:var(--glass); border-color:var(--border); }
+    .topbar-link.active {
+      color:var(--white); font-weight:600;
+      background:rgba(255,255,255,0.1);
+      border-color:rgba(255,255,255,0.15);
+    }
+
+    .pfec-btn {
+      display:flex; align-items:center; gap:8px;
+      padding:6px 14px;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.15);
+      border-radius:8px; color:var(--text);
+      font-size:0.78rem; font-weight:600;
+      text-decoration:none; transition:all 0.15s; cursor:pointer;
+    }
+    .pfec-btn img { width:18px;height:18px;border-radius:4px;object-fit:cover; }
+    .pfec-btn:hover { background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.25); }
+
+    /* LAYOUT */
+    .dispatch-layout {
+      display:grid;
+      grid-template-columns:320px 1fr;
+      min-height:calc(100vh - 54px);
+      position:relative; z-index:1;
+    }
+
+    /* SIDEBAR */
+    .sidebar {
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-right:1px solid var(--border);
+      display:flex; flex-direction:column;
+      overflow-y:auto; position:relative; z-index:2;
+    }
+
+    .sidebar::-webkit-scrollbar { width:3px; }
+    .sidebar::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:2px; }
+
+    .sidebar-section {
+      padding:1.2rem 1.4rem;
+      border-bottom:1px solid var(--border);
+    }
+
+    .section-title {
+      font-size:0.65rem; text-transform:uppercase;
+      letter-spacing:0.12em; color:var(--muted);
+      margin-bottom:0.9rem;
+      display:flex; align-items:center; gap:6px;
+    }
+    .section-title::before { content:''; width:2px;height:10px;background:var(--white);border-radius:1px;opacity:0.4; }
+
+    /* GLASS FORM ELEMENTS */
+    .form-row { display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px; }
+    .form-row.s1 { grid-template-columns:1fr; }
+    .form-row.s3 { grid-template-columns:1fr 1fr 1fr; }
+    .form-group { display:flex;flex-direction:column;gap:4px; }
+    .form-label { font-size:0.62rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--muted); }
+
+    .gi, .gs {
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.09);
+      border-radius:7px; padding:8px 10px;
+      color:var(--text); font-size:0.86rem;
+      outline:none; transition:all 0.15s;
+      font-family:inherit; appearance:none; width:100%;
+      backdrop-filter:blur(10px);
+    }
+    .gi:focus, .gs:focus {
+      border-color:rgba(255,255,255,0.35);
+      background:rgba(255,255,255,0.08);
+      box-shadow:0 0 0 3px rgba(255,255,255,0.05);
+    }
+    .gi::placeholder { color:var(--muted); }
+    .gi.mono { font-family:'Courier New',monospace;font-size:0.92rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase; }
+
+    .airport-row { display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:end;margin-bottom:7px; }
+    .swap-btn {
+      width:32px;height:32px;
+      background:rgba(255,255,255,0.06);
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:6px; color:var(--muted2);
+      cursor:pointer; display:flex; align-items:center; justify-content:center;
+      font-size:0.9rem; transition:all 0.15s;
+    }
+    .swap-btn:hover { background:var(--white);color:#000;border-color:var(--white); }
+
+    /* GLASS BUTTONS */
+    .gbtn {
+      width:100%; padding:11px;
+      background:var(--white); color:#000;
+      border:none; border-radius:8px;
+      font-size:0.9rem; font-weight:700;
+      cursor:pointer; transition:all 0.15s;
+      font-family:inherit; margin-top:4px;
+      letter-spacing:0.01em;
+    }
+    .gbtn:hover { background:#e0e0e0; transform:translateY(-1px); box-shadow:0 4px 20px rgba(255,255,255,0.15); }
+    .gbtn:active { transform:translateY(0); }
+
+    .gbtn-out {
+      background:transparent; color:var(--muted);
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:8px; padding:8px;
+      font-size:0.8rem; font-weight:600;
+      cursor:pointer; font-family:inherit;
+      transition:all 0.15s; width:100%; margin-top:6px;
+    }
+    .gbtn-out:hover { color:var(--text);border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.05); }
+
+    /* WAYPOINT PICKER */
+    .wp-picker-search {
+      width:100%;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:6px; padding:7px 10px;
+      color:var(--text); font-size:0.82rem;
+      outline:none; font-family:inherit;
+      margin-bottom:6px; transition:border 0.15s;
+    }
+    .wp-picker-search:focus { border-color:rgba(255,255,255,0.25); }
+    .wp-picker-search::placeholder { color:var(--muted); }
+
+    .wp-type-tabs { display:flex;gap:3px;margin-bottom:7px; }
+    .wtt {
+      flex:1; padding:4px 3px;
+      background:transparent; border:1px solid rgba(255,255,255,0.08);
+      border-radius:4px; color:var(--muted);
+      font-size:0.65rem; font-weight:700;
+      cursor:pointer; font-family:inherit;
+      transition:all 0.12s; text-transform:uppercase; letter-spacing:0.05em;
+    }
+    .wtt:hover, .wtt.on {
+      border-color:rgba(255,255,255,0.3);
+      color:var(--white); background:rgba(255,255,255,0.08);
+    }
+
+    .wp-grid {
+      display:grid; grid-template-columns:repeat(auto-fill,minmax(60px,1fr));
+      gap:3px; max-height:130px; overflow-y:auto; padding-right:2px;
+    }
+    .wp-grid::-webkit-scrollbar { width:2px; }
+    .wp-grid::-webkit-scrollbar-thumb { background:rgba(255,255,255,0.1); border-radius:1px; }
+
+    .wp-item {
+      padding:4px 3px;
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.07);
+      border-radius:4px; font-size:0.66rem;
+      font-weight:700; color:var(--text);
+      cursor:pointer; text-align:center;
+      transition:all 0.1s;
+      font-family:'Courier New',monospace;
+    }
+    .wp-item:hover { background:var(--white);color:#000;border-color:var(--white); }
+    .wp-item.vor { border-color:rgba(255,255,255,0.15); color:#ccc; }
+    .wp-item.ndb { border-color:rgba(255,255,255,0.1); color:#aaa; }
+    .wp-item.none { grid-column:1/-1;text-align:center;color:var(--muted);font-size:0.72rem;padding:0.8rem; }
+
+    /* ROUTE STRIP */
+    .route-strip {
+      background:rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:7px; padding:8px 10px;
+      margin-top:7px; min-height:36px;
+    }
+    .rs-label { font-size:0.58rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:5px; }
+    .rs-nodes { display:flex;flex-wrap:wrap;align-items:center;gap:3px; }
+    .rs-node {
+      display:inline-flex; align-items:center; gap:3px;
+      padding:2px 7px; border-radius:4px;
+      font-size:0.68rem; font-weight:800;
+      font-family:'Courier New',monospace;
+    }
+    .rs-node.apt { background:var(--white);color:#000; }
+    .rs-node.fix { background:rgba(255,255,255,0.08);border:1px solid rgba(255,255,255,0.12);color:var(--text); }
+    .rs-rm { color:rgba(255,255,255,0.4);cursor:pointer;font-size:0.62rem; }
+    .rs-rm:hover { color:#ff6666; }
+    .rs-arr { color:var(--muted);font-size:0.62rem; }
+    .rs-empty { color:var(--muted);font-size:0.7rem;font-style:italic; }
+
+    /* MAIN */
+    .main-content { overflow-y:auto;background:transparent;position:relative;z-index:1; }
+
+    /* GLASS CARD */
+    .gcard {
+      background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:14px;
+      backdrop-filter:blur(20px);
+      -webkit-backdrop-filter:blur(20px);
+      box-shadow:0 1px 0 rgba(255,255,255,0.06) inset, 0 20px 60px rgba(0,0,0,0.5);
+      overflow:hidden;
+    }
+
+    .gcard-header {
+      padding:10px 16px;
+      border-bottom:1px solid rgba(255,255,255,0.07);
+      background:rgba(255,255,255,0.03);
+      display:flex; align-items:center; justify-content:space-between;
+    }
+    .gcard-title { font-size:0.7rem;text-transform:uppercase;letter-spacing:0.09em;color:var(--muted2);font-weight:700; }
+    .gbadge {
+      font-size:0.6rem; padding:2px 8px; border-radius:3px;
+      font-weight:700; text-transform:uppercase; letter-spacing:0.05em;
+    }
+    .gbadge-w { background:rgba(255,255,255,0.12);color:var(--white); }
+    .gbadge-g { background:rgba(100,220,100,0.15);color:#6dc; }
+    .gbadge-y { background:rgba(220,200,50,0.15);color:#dc4; }
+    .gbadge-r { background:rgba(220,80,80,0.15);color:#f88; }
+
+    .gcard-body { padding:14px 16px; }
+
+    .data-row {
+      display:flex; justify-content:space-between;
+      align-items:center; padding:7px 0;
+      border-bottom:1px solid rgba(255,255,255,0.04);
+      font-size:0.82rem;
+    }
+    .data-row:last-child { border-bottom:none; }
+    .dk { color:var(--muted2); }
+    .dv { font-weight:600; color:var(--white); text-align:right; }
+    .dv.mono { font-family:'Courier New',monospace; }
+    .dv.g { color:#6dc; }
+    .dv.y { color:#dc4; }
+    .dv.r { color:#f88; }
+
+    /* FUEL BARS */
+    .fbar-wrap { margin:5px 0; }
+    .fbar-lbl { display:flex;justify-content:space-between;font-size:0.68rem;color:var(--muted2);margin-bottom:3px; }
+    .fbar-track { height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden; }
+    .fbar-fill { height:100%;border-radius:2px;transition:width 0.7s ease; }
+    .fw { background:var(--white); }
+    .fg { background:#6dc; }
+    .fy { background:#dc4; }
+    .fo { background:#f84; }
+
+    /* FLIGHT HEADER */
+    .flight-header {
+      background:linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02));
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:14px; padding:1.6rem 2rem;
+      margin-bottom:1.2rem;
+      display:flex; align-items:center;
+      justify-content:space-between; flex-wrap:wrap; gap:1rem;
+      backdrop-filter:blur(20px);
+      box-shadow:0 1px 0 rgba(255,255,255,0.08) inset;
+    }
+
+    .frd { display:flex;align-items:center;gap:16px; }
+    .frd-apt { text-align:center; }
+    .frd-icao { font-size:2.6rem;font-weight:800;letter-spacing:-0.05em;color:var(--white);font-family:'Courier New',monospace; }
+    .frd-name { font-size:0.7rem;color:var(--muted2);margin-top:2px; }
+    .frd-mid { display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted); }
+    .frd-line { width:80px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,255,255,0.3),transparent); }
+
+    .fmeta { display:flex;gap:1.5rem;flex-wrap:wrap; }
+    .fmeta-item .fml { font-size:0.62rem;text-transform:uppercase;letter-spacing:0.08em;color:var(--muted);margin-bottom:3px; }
+    .fmeta-item .fmv { font-size:1.05rem;font-weight:700;color:var(--white); }
+    .fmeta-item .fmu { font-size:0.65rem;color:var(--muted); }
+
+    /* STATUS BAR */
+    .status-bar { display:flex;gap:6px;margin-bottom:1.2rem;flex-wrap:wrap; }
+    .spill {
+      display:flex; align-items:center; gap:5px;
+      padding:5px 12px; border-radius:6px;
+      font-size:0.74rem; font-weight:600; border:1px solid transparent;
+    }
+    .spill-w { background:rgba(255,255,255,0.07);border-color:rgba(255,255,255,0.12);color:var(--text); }
+    .spill-g { background:rgba(100,220,100,0.08);border-color:rgba(100,220,100,0.2);color:#6dc; }
+    .spill-y { background:rgba(220,200,50,0.08);border-color:rgba(220,200,50,0.2);color:#dc4; }
+    .spill-r { background:rgba(220,80,80,0.08);border-color:rgba(220,80,80,0.2);color:#f88; }
+    .sdot { width:5px;height:5px;border-radius:50%;background:currentColor; }
+
+    /* PANELS */
+    .panels { display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem; }
+    .panels3 { grid-template-columns:1fr 1fr 1fr; }
+
+    /* ROUTE TABLE */
+    .rt-wrap { border-radius:14px;overflow:hidden;margin-bottom:1.2rem; }
+    .rt-head {
+      display:grid; grid-template-columns:80px 55px 60px 70px 70px 70px 70px;
+      padding:8px 14px; background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+      border-bottom:none; font-size:0.6rem;
+      text-transform:uppercase; letter-spacing:0.08em; color:var(--muted); gap:6px;
+    }
+    .rt-body { border:1px solid rgba(255,255,255,0.08); border-radius:0 0 14px 14px; overflow:hidden; }
+    .rt-row {
+      display:grid; grid-template-columns:80px 55px 60px 70px 70px 70px 70px;
+      padding:8px 14px; border-bottom:1px solid rgba(255,255,255,0.04);
+      font-size:0.79rem; gap:6px;
+      background:rgba(255,255,255,0.01); transition:background 0.1s;
+    }
+    .rt-row:last-child { border-bottom:none; }
+    .rt-row:hover { background:rgba(255,255,255,0.04); }
+    .rt-row.apt { background:rgba(255,255,255,0.04); }
+    .rtfix { font-weight:800;font-family:'Courier New',monospace;font-size:0.82rem;color:var(--white); }
+    .rttype { color:var(--muted2);font-size:0.72rem; }
+    .rtnum { color:var(--muted2);text-align:right; }
+    .rttime { color:var(--text);text-align:right;font-weight:600; }
+    .rtfuel { color:#6dc;text-align:right;font-size:0.74rem; }
+
+    /* WX */
+    .wx-raw {
+      font-family:'Courier New',monospace; font-size:0.75rem;
+      color:var(--text); line-height:1.7; word-break:break-all;
+      padding:10px 12px;
+      background:rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.07);
+      border-radius:6px; margin-bottom:8px;
+    }
+    .wx-dec { display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:8px; }
+    .wxitem .wxl { font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.07em;margin-bottom:2px; }
+    .wxitem .wxv { font-size:0.83rem;font-weight:600; }
+    .cat-v { color:#6dc; } .cat-m { color:#dc4; } .cat-i { color:#f84; } .cat-l { color:#f88; }
+
+    /* OFP RAW */
+    .ofp-raw {
+      background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08);
+      border-radius:14px; padding:1.4rem;
+      font-family:'Courier New',monospace; font-size:0.76rem;
+      color:#6a7a8a; line-height:1.9; white-space:pre-wrap;
+      word-break:break-all; margin-bottom:1.2rem;
+      backdrop-filter:blur(10px);
+    }
+    .ofp-hi { color:var(--white);font-weight:700; }
+    .ofp-acc { color:rgba(255,255,255,0.6); }
+    .ofp-grn { color:#6dc; }
+
+    /* EMPTY STATE */
+    .empty-state {
+      display:flex; flex-direction:column;
+      align-items:center; justify-content:center;
+      height:100%; min-height:500px;
+      color:var(--muted); text-align:center; padding:2rem;
+    }
+    .empty-icon { font-size:3.5rem;margin-bottom:1.2rem;opacity:0.15; }
+    .empty-title { font-size:1rem;font-weight:700;color:var(--muted2);margin-bottom:0.5rem; }
+    .empty-sub { font-size:0.83rem;max-width:300px;line-height:1.7; }
+
+    /* OFP WRAP */
+    .ofp-wrap { padding:1.6rem;display:none; }
+    .ofp-wrap.visible { display:block; }
+
+    /* ACTION BAR */
+    .action-bar { display:flex;gap:8px;margin-bottom:1.2rem;flex-wrap:wrap; }
+    .abtn {
+      display:flex; align-items:center; gap:6px;
+      padding:7px 16px; border-radius:7px;
+      font-size:0.78rem; font-weight:600;
+      cursor:pointer; font-family:inherit; transition:all 0.15s;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.1);
+      color:var(--text);
+    }
+    .abtn:hover { background:rgba(255,255,255,0.1);border-color:rgba(255,255,255,0.2); }
+    .abtn.primary { background:var(--white);color:#000;border-color:var(--white); }
+    .abtn.primary:hover { background:#e0e0e0; }
+
+    /* LOADING */
+    .loading-overlay {
+      display:none; position:fixed; inset:0;
+      background:rgba(0,0,0,0.8); backdrop-filter:blur(6px);
+      z-index:1000; align-items:center; justify-content:center; flex-direction:column; gap:1rem;
+    }
+    .loading-overlay.show { display:flex; }
+    .loader-ring {
+      width:46px;height:46px;
+      border:2px solid rgba(255,255,255,0.1);
+      border-top-color:var(--white); border-radius:50%;
+      animation:spin 0.8s linear infinite;
+    }
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .loader-txt { color:var(--muted2);font-size:0.83rem; }
+
+    /* SCHEDULED FLIGHTS */
+    .sched-wrap { padding:1.6rem;position:relative;z-index:1; }
+    .sched-grid { display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.2rem; }
+
+    .sched-card {
+      background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:12px; padding:1.2rem;
+      backdrop-filter:blur(20px); transition:all 0.2s;
+      position:relative; overflow:hidden;
+    }
+    .sched-card:hover { border-color:rgba(255,255,255,0.2); transform:translateY(-2px); }
+
+    .sched-card-top {
+      display:flex; align-items:center;
+      justify-content:space-between; margin-bottom:10px;
+    }
+    .sched-route { font-size:1.1rem;font-weight:800;font-family:'Courier New',monospace;letter-spacing:0.02em; }
+    .sched-status {
+      font-size:0.6rem;font-weight:700;text-transform:uppercase;letter-spacing:0.07em;
+      padding:3px 8px;border-radius:4px;
+    }
+    .ss-sched { background:rgba(255,255,255,0.1);color:var(--text); }
+    .ss-done { background:rgba(100,220,100,0.12);color:#6dc; }
+    .ss-active { background:rgba(255,200,50,0.12);color:#dc4; }
+
+    .sched-card-meta {
+      display:grid;grid-template-columns:1fr 1fr;gap:6px;
+      font-size:0.76rem;color:var(--muted2);
+    }
+    .sm-item .sm-l { font-size:0.6rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.06em;margin-bottom:1px; }
+    .sm-item .sm-v { font-weight:600;color:var(--text);font-size:0.8rem; }
+
+    .sched-card-footer {
+      display:flex;gap:6px;margin-top:10px;padding-top:10px;
+      border-top:1px solid rgba(255,255,255,0.06);
+    }
+    .sched-btn {
+      flex:1;padding:6px 8px;border-radius:6px;
+      font-size:0.72rem;font-weight:700;cursor:pointer;
+      font-family:inherit;transition:all 0.15s;border:none;
+    }
+    .sb-complete { background:rgba(100,220,100,0.15);color:#6dc; border:1px solid rgba(100,220,100,0.2); }
+    .sb-complete:hover { background:rgba(100,220,100,0.25); }
+    .sb-delete { background:rgba(220,80,80,0.1);color:#f88;border:1px solid rgba(220,80,80,0.15); }
+    .sb-delete:hover { background:rgba(220,80,80,0.2); }
+    .sb-load { background:rgba(255,255,255,0.08);color:var(--text);border:1px solid rgba(255,255,255,0.12); }
+    .sb-load:hover { background:rgba(255,255,255,0.15); }
+
+    .sched-completed-badge {
+      position:absolute;top:10px;right:10px;
+      font-size:1.2rem;opacity:0.3;
+    }
+
+    /* NEW SCHEDULE MODAL */
+    .modal-overlay {
+      display:none;position:fixed;inset:0;
+      background:rgba(0,0,0,0.85);
+      backdrop-filter:blur(8px);
+      z-index:500;align-items:center;justify-content:center;
+    }
+    .modal-overlay.show { display:flex; }
+    .modal {
+      background:linear-gradient(135deg,rgba(255,255,255,0.08),rgba(255,255,255,0.03));
+      border:1px solid rgba(255,255,255,0.15);
+      border-radius:16px; padding:2rem;
+      width:90%;max-width:500px;
+      backdrop-filter:blur(30px);
+      box-shadow:0 40px 80px rgba(0,0,0,0.8);
+    }
+    .modal-title { font-size:1.1rem;font-weight:800;margin-bottom:1.2rem; }
+    .modal-footer { display:flex;gap:8px;margin-top:1.2rem; }
+
+    /* TOPBAR PERF & SCHED */
+    /* TAKEOFF PERF */
+    .perf-wrap { padding:1.6rem;position:relative;z-index:1; }
+    .perf-grid { display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:1.2rem; }
+    .perf-result {
+      background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));
+      border:1px solid rgba(255,255,255,0.1);
+      border-radius:14px; padding:1.4rem;
+      backdrop-filter:blur(20px);
+      display:none;margin-top:1.2rem;
+    }
+    .perf-result.show { display:block; }
+    .perf-big { font-size:2.2rem;font-weight:800;color:var(--white);letter-spacing:-0.04em; }
+    .perf-sub { font-size:0.75rem;color:var(--muted);margin-top:2px; }
+
+    .perf-bar-wrap { margin:1rem 0; }
+    .perf-bar-track { height:6px;background:rgba(255,255,255,0.06);border-radius:3px;overflow:hidden; }
+    .perf-bar-fill { height:100%;border-radius:3px;transition:width 0.8s ease; background:var(--white); }
+    .perf-warning {
+      background:rgba(255,200,50,0.08);border:1px solid rgba(255,200,50,0.2);
+      border-radius:8px;padding:10px 14px;
+      font-size:0.8rem;color:#dc4;margin-top:10px;display:none;
+    }
+    .perf-warning.show { display:block; }
+
+    /* NOTAM / PIREP SECTION */
+    .notam-item {
+      background:rgba(255,255,255,0.03);
+      border:1px solid rgba(255,255,255,0.07);
+      border-radius:8px; padding:10px 12px;
+      margin-bottom:6px; font-size:0.8rem;
+      line-height:1.6; color:var(--muted2);
+    }
+    .notam-item strong { color:var(--text); }
+    .notam-item .nt { font-size:0.62rem;color:var(--muted);margin-bottom:4px;text-transform:uppercase;letter-spacing:0.07em; }
+
+    .err-msg { font-size:0.78rem;color:#f88;margin-top:6px;display:none; }
+
+    @media(max-width:900px){
+      .dispatch-layout{grid-template-columns:1fr}
+      .sidebar{border-right:none;border-bottom:1px solid var(--border)}
+      .panels,.panels3{grid-template-columns:1fr}
+      .sched-grid{grid-template-columns:1fr}
+      .perf-grid{grid-template-columns:1fr}
+    }
+    @media print{
+      .topbar,.sidebar,.action-bar,.bg-orbs{display:none}
+      .dispatch-layout{display:block}
+      body{background:white;color:#000}
+      .ofp-raw{background:white;color:#333;border:1px solid #ccc}
+    }
+  </style>
+</head>
+<body>
+
+<div class="bg-orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loading-overlay">
+  <div class="loader-ring"></div>
+  <div class="loader-txt" id="loading-txt">Generating flight plan…</div>
+</div>
+
+<!-- SCHEDULE MODAL -->
+<div class="modal-overlay" id="sched-modal">
+  <div class="modal">
+    <div class="modal-title">Schedule New Flight</div>
+    <div class="form-row">
+      <div class="form-group">
+        <div class="form-label">Flight No.</div>
+        <input type="text" class="gi mono" id="sm-fltno" placeholder="PF001" maxlength="7" />
+      </div>
+      <div class="form-group">
+        <div class="form-label">Date</div>
+        <input type="date" class="gi" id="sm-date" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <div class="form-label">STD (UTC)</div>
+        <input type="time" class="gi" id="sm-std" />
+      </div>
+      <div class="form-group">
+        <div class="form-label">STA (UTC)</div>
+        <input type="time" class="gi" id="sm-sta" />
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <div class="form-label">Departure</div>
+        <select class="gs" id="sm-dep">
+          <option value="">Select</option>
+          <optgroup label="🇨🇾 Cyprus"><option value="LCLK">LCLK</option><option value="LCPH">LCPH</option><option value="LCRA">LCRA</option></optgroup>
+          <optgroup label="🇩🇴 Dominican Republic"><option value="MDAB">MDAB</option><option value="MDCR">MDCR</option><option value="MDST">MDST</option><option value="MDPC">MDPC</option></optgroup>
+          <optgroup label="🇫🇮 Finland"><option value="EFKT">EFKT</option></optgroup>
+          <optgroup label="🇭🇹 Haiti"><option value="MTCA">MTCA</option></optgroup>
+          <optgroup label="🇪🇸 Spain"><option value="GCLP">GCLP</option><option value="LEMH">LEMH</option></optgroup>
+          <optgroup label="🇬🇧 United Kingdom"><option value="EGKK">EGKK</option><option value="EGHI">EGHI</option></optgroup>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Destination</div>
+        <select class="gs" id="sm-arr">
+          <option value="">Select</option>
+          <optgroup label="🇨🇾 Cyprus"><option value="LCLK">LCLK</option><option value="LCPH">LCPH</option><option value="LCRA">LCRA</option></optgroup>
+          <optgroup label="🇩🇴 Dominican Republic"><option value="MDAB">MDAB</option><option value="MDCR">MDCR</option><option value="MDST">MDST</option><option value="MDPC">MDPC</option></optgroup>
+          <optgroup label="🇫🇮 Finland"><option value="EFKT">EFKT</option></optgroup>
+          <optgroup label="🇭🇹 Haiti"><option value="MTCA">MTCA</option></optgroup>
+          <optgroup label="🇪🇸 Spain"><option value="GCLP">GCLP</option><option value="LEMH">LEMH</option></optgroup>
+          <optgroup label="🇬🇧 United Kingdom"><option value="EGKK">EGKK</option><option value="EGHI">EGHI</option></optgroup>
+        </select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <div class="form-label">Aircraft</div>
+        <select class="gs" id="sm-ac">
+          <option value="A220">Airbus A220</option>
+          <option value="A320">Airbus A320</option>
+          <option value="A330">Airbus A330-300</option>
+          <option value="A350">Airbus A350-900</option>
+          <option value="B717">Boeing 717</option>
+          <option value="B727">Boeing 727</option>
+          <option value="B737">Boeing 737</option>
+          <option value="B757">Boeing 757</option>
+          <option value="B787">Boeing 787</option>
+          <option value="B777">Boeing 777</option>
+          <option value="M350">Piper M350</option>
+          <option value="HAWKT1">BAE Hawk T1</option>
+          <option value="TYPHOON">Eurofighter Typhoon</option>
+          <option value="DH8D">Dash 8-Q400</option>
+          <option value="C150">Cessna 150A</option>
+          <option value="C550">Citation II</option>
+          <option value="F100">Fokker 100</option>
+          <option value="BE58">Baron G58</option>
+          <option value="MD11">MD-11</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <div class="form-label">Notes</div>
+        <input type="text" class="gi" id="sm-notes" placeholder="Optional notes" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="gbtn" onclick="saveScheduledFlight()">Save Flight</button>
+      <button class="gbtn-out" onclick="closeModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOPBAR -->
+<div class="topbar">
+  <div class="topbar-left">
+    <div class="brand">
+      <img src="pfrp-logo.png" alt="PF" class="brand-logo" />
+      <div>
+        <div class="brand-name">PF Dispatch</div>
+        <div class="brand-sub">Mach 2 Studios</div>
+      </div>
+    </div>
+    <div class="topbar-nav">
+      <button class="topbar-link active" onclick="showSection('dispatch')">Dispatch</button>
+      <button class="topbar-link" onclick="showSection('scheduled')">Scheduled</button>
+      <button class="topbar-link" onclick="showSection('completed')">Completed</button>
+      <button class="topbar-link" onclick="showSection('perf')">T/O Performance</button>
+      <button class="topbar-link" onclick="showSection('airports')">Airports</button>
+      <button class="topbar-link" onclick="showSection('fleet')">Fleet</button>
+      <button class="topbar-link" onclick="showSection('waypoints')">Waypoints</button>
+    </div>
+  </div>
+  <div style="display:flex;align-items:center;gap:10px">
+    <a href="https://pfevent-control.onrender.com/" target="_blank" class="pfec-btn">
+      <img src="pfec-logo.png" alt="PFEC" />
+      PFEvent Control
+    </a>
+  </div>
+</div>
+
+<!-- DISPATCH -->
+<div id="section-dispatch" style="position:relative;z-index:1">
+  <div class="dispatch-layout">
+
+    <!-- SIDEBAR -->
+    <div class="sidebar">
+
+      <div class="sidebar-section">
+        <div class="section-title">Flight Route</div>
+        <div class="airport-row">
+          <div class="form-group">
+            <div class="form-label">Origin</div>
+            <select class="gs gi mono" id="dep-select" onchange="refreshStrip()">
+              <option value="">DEP</option>
+              <optgroup label="🇨🇾 Cyprus"><option value="LCLK">LCLK</option><option value="LCPH">LCPH</option><option value="LCRA">LCRA</option></optgroup>
+              <optgroup label="🇩🇴 Dominican Republic"><option value="MDAB">MDAB</option><option value="MDCR">MDCR</option><option value="MDST">MDST</option><option value="MDPC">MDPC</option></optgroup>
+              <optgroup label="🇫🇮 Finland"><option value="EFKT">EFKT</option></optgroup>
+              <optgroup label="🇭🇹 Haiti"><option value="MTCA">MTCA</option></optgroup>
+              <optgroup label="🇪🇸 Spain"><option value="GCLP">GCLP</option><option value="LEMH">LEMH</option></optgroup>
+              <optgroup label="🇬🇧 United Kingdom"><option value="EGKK">EGKK</option><option value="EGHI">EGHI</option></optgroup>
+            </select>
+          </div>
+          <button class="swap-btn" onclick="swapApts()">⇄</button>
+          <div class="form-group">
+            <div class="form-label">Destination</div>
+            <select class="gs gi mono" id="arr-select" onchange="refreshStrip()">
+              <option value="">ARR</option>
+              <optgroup label="🇨🇾 Cyprus"><option value="LCLK">LCLK</option><option value="LCPH">LCPH</option><option value="LCRA">LCRA</option></optgroup>
+              <optgroup label="🇩🇴 Dominican Republic"><option value="MDAB">MDAB</option><option value="MDCR">MDCR</option><option value="MDST">MDST</option><option value="MDPC">MDPC</option></optgroup>
+              <optgroup label="🇫🇮 Finland"><option value="EFKT">EFKT</option></optgroup>
+              <optgroup label="🇭🇹 Haiti"><option value="MTCA">MTCA</option></optgroup>
+              <optgroup label="🇪🇸 Spain"><option value="GCLP">GCLP</option><option value="LEMH">LEMH</option></optgroup>
+              <optgroup label="🇬🇧 United Kingdom"><option value="EGKK">EGKK</option><option value="EGHI">EGHI</option></optgroup>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <div class="form-label">Alternate</div>
+            <select class="gs" id="altn-select">
+              <option value="">None</option>
+              <optgroup label="🇨🇾 Cyprus"><option value="LCLK">LCLK</option><option value="LCPH">LCPH</option><option value="LCRA">LCRA</option></optgroup>
+              <optgroup label="🇩🇴 Dominican Republic"><option value="MDAB">MDAB</option><option value="MDCR">MDCR</option><option value="MDST">MDST</option><option value="MDPC">MDPC</option></optgroup>
+              <optgroup label="🇫🇮 Finland"><option value="EFKT">EFKT</option></optgroup>
+              <optgroup label="🇭🇹 Haiti"><option value="MTCA">MTCA</option></optgroup>
+              <optgroup label="🇪🇸 Spain"><option value="GCLP">GCLP</option><option value="LEMH">LEMH</option></optgroup>
+              <optgroup label="🇬🇧 United Kingdom"><option value="EGKK">EGKK</option><option value="EGHI">EGHI</option></optgroup>
+            </select>
+          </div>
+          <div class="form-group">
+            <div class="form-label">Flight No.</div>
+            <input type="text" class="gi mono" id="flt-number" placeholder="PF001" maxlength="7" />
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-title">Aircraft & Load</div>
+        <div class="form-row s1">
+          <div class="form-group">
+            <div class="form-label">Aircraft</div>
+            <select class="gs" id="ac-select">
+              <optgroup label="Airbus">
+                <option value="A220|450|18000|narrow">Airbus A220</option>
+                <option value="A320|450|18000|narrow">Airbus A320</option>
+                <option value="A330|470|62000|wide">Airbus A330-300</option>
+                <option value="A350|480|70000|wide">Airbus A350-900</option>
+              </optgroup>
+              <optgroup label="Boeing">
+                <option value="B717|430|15000|narrow">Boeing 717</option>
+                <option value="B727|420|20000|narrow">Boeing 727</option>
+                <option value="B737|450|20000|narrow">Boeing 737</option>
+                <option value="B757|460|35000|narrow">Boeing 757</option>
+                <option value="B787|488|65000|wide">Boeing 787</option>
+                <option value="B777|490|75000|wide">Boeing 777</option>
+              </optgroup>
+              <optgroup label="Piper"><option value="M350|170|400|ga">Piper M350</option></optgroup>
+              <optgroup label="BAE Systems">
+                <option value="HAWKT1|450|3000|military">BAE Hawk T1</option>
+                <option value="TYPHOON|1000|2500|military">Eurofighter Typhoon</option>
+              </optgroup>
+              <optgroup label="Bombardier"><option value="DH8D|270|8000|turboprop">Dash 8-Q400</option></optgroup>
+              <optgroup label="Cessna">
+                <option value="C150|90|350|ga">Cessna 150A</option>
+                <option value="C550|340|4000|bizjet">Citation II</option>
+              </optgroup>
+              <optgroup label="Fokker"><option value="F100|410|14000|narrow">Fokker 100</option></optgroup>
+              <optgroup label="Beechcraft"><option value="BE58|190|600|ga">Baron G58</option></optgroup>
+              <optgroup label="McDonnell Douglas"><option value="MD11|475|90000|wide">MD-11</option></optgroup>
+            </select>
+          </div>
+        </div>
+        <div class="form-row s3">
+          <div class="form-group">
+            <div class="form-label">Cruise FL</div>
+            <input type="number" class="gi mono" id="cruise-fl" value="350" min="50" max="450" />
+          </div>
+          <div class="form-group">
+            <div class="form-label">Pax</div>
+            <input type="number" class="gi" id="pax-count" value="150" min="0" max="500" />
+          </div>
+          <div class="form-group">
+            <div class="form-label">Cargo kg</div>
+            <input type="number" class="gi" id="cargo-kg" value="5000" min="0" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <div class="form-label">Cost Index</div>
+            <input type="number" class="gi" id="cost-index" value="50" min="0" max="999" />
+          </div>
+          <div class="form-group">
+            <div class="form-label">Reserve min</div>
+            <input type="number" class="gi" id="reserve-min" value="45" min="0" max="120" />
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <div class="section-title">Route Waypoints</div>
+        <input type="text" class="wp-picker-search" id="wp-sb-search" placeholder="Search fixes…" oninput="refreshWpGrid()" />
+        <div class="wp-type-tabs">
+          <button class="wtt on" data-t="ALL" onclick="setWpType(this)">All</button>
+          <button class="wtt" data-t="WAYPOINT" onclick="setWpType(this)">Fix</button>
+          <button class="wtt" data-t="VOR-DME" onclick="setWpType(this)">VOR</button>
+          <button class="wtt" data-t="NDB" onclick="setWpType(this)">NDB</button>
+        </div>
+        <div class="wp-grid" id="wp-sb-grid"></div>
+        <div class="route-strip">
+          <div class="rs-label">Route</div>
+          <div class="rs-nodes" id="route-strip-nodes">
+            <span class="rs-empty">Select DEP and ARR to begin</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="sidebar-section">
+        <button class="gbtn" onclick="generateOFP()">✈ Generate Flight Plan</button>
+        <button class="gbtn-out" onclick="schedFromCurrent()">+ Schedule This Flight</button>
+        <button class="gbtn-out" onclick="clearAll()">↺ Clear</button>
+        <div class="err-msg" id="gen-error"></div>
+      </div>
+    </div>
+
+    <!-- MAIN -->
+    <div class="main-content">
+      <div class="empty-state" id="empty-state">
+        <div class="empty-icon">✈</div>
+        <div class="empty-title">No Flight Plan Generated</div>
+        <div class="empty-sub">Configure your flight on the left and click Generate Flight Plan.</div>
+      </div>
+      <div class="ofp-wrap" id="ofp-wrap">
+        <div class="action-bar">
+          <button class="abtn primary" onclick="window.print()">⎙ Print OFP</button>
+          <button class="abtn" onclick="copyOFP()">⧉ Copy OFP</button>
+          <button class="abtn" onclick="schedFromCurrent()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-icon lucide-calendar"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg> Schedule</button>
+          <button class="abtn" onclick="clearAll()">↺ New Flight</button>
+          <div style="margin-left:auto;font-size:0.72rem;color:var(--muted);align-self:center">Generated: <span id="gen-time">—</span></div>
+        </div>
+
+        <div class="flight-header">
+          <div class="frd">
+            <div class="frd-apt"><div class="frd-icao" id="hdr-dep">—</div><div class="frd-name" id="hdr-dep-name">—</div></div>
+            <div class="frd-mid"><div class="frd-line"></div><span style="font-size:1.1rem">✈</span><div class="frd-line"></div></div>
+            <div class="frd-apt"><div class="frd-icao" id="hdr-arr">—</div><div class="frd-name" id="hdr-arr-name">—</div></div>
+          </div>
+          <div class="fmeta">
+            <div class="fmeta-item"><div class="fml">Flight</div><div class="fmv" id="hdr-fltno">—</div></div>
+            <div class="fmeta-item"><div class="fml">Aircraft</div><div class="fmv" id="hdr-ac">—</div></div>
+            <div class="fmeta-item"><div class="fml">Block Time</div><div class="fmv" id="hdr-block">—</div><div class="fmu">approx</div></div>
+            <div class="fmeta-item"><div class="fml">Distance</div><div class="fmv" id="hdr-dist">—</div><div class="fmu">map units</div></div>
+            <div class="fmeta-item"><div class="fml">Cruise FL</div><div class="fmv" id="hdr-fl">—</div></div>
+          </div>
+        </div>
+
+        <div class="status-bar" id="status-bar"></div>
+        <div class="panels" id="panels-r1"></div>
+        <div class="panels panels3" id="panels-r2"></div>
+
+        <div class="rt-wrap gcard">
+          <div class="gcard-header">
+            <span class="gcard-title">Route Log</span>
+            <span class="gbadge gbadge-w" id="rt-count">0 fixes</span>
+          </div>
+          <div class="rt-head">
+            <span>Fix</span><span>Type</span><span>Track</span>
+            <span>Dist</span><span>ETE</span><span>ATE</span><span>Fuel</span>
+          </div>
+          <div class="rt-body" id="rt-body"></div>
+        </div>
+
+        <div class="panels" id="wx-panels"></div>
+
+        <div style="margin-bottom:1.2rem">
+          <div class="gcard-header gcard" style="border-radius:14px 14px 0 0;border-bottom:none">
+            <span class="gcard-title">Simulated NOTAMs</span>
+            <span class="gbadge gbadge-y">Notice</span>
+          </div>
+          <div style="background:rgba(255,255,255,0.02);border:1px solid rgba(255,255,255,0.08);border-radius:0 0 14px 14px;padding:14px" id="notam-panel"></div>
+        </div>
+
+        <div class="ofp-raw" id="ofp-raw-text"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCHEDULED -->
+<div id="section-scheduled" style="display:none;position:relative;z-index:1">
+  <div class="sched-wrap">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+      <div>
+        <h2 style="font-size:1.6rem;font-weight:800">Scheduled Flights</h2>
+        <div style="font-size:0.8rem;color:var(--muted);margin-top:3px">Upcoming and active flight operations</div>
+      </div>
+      <button class="gbtn" style="width:auto;padding:10px 20px" onclick="openModal()">+ Schedule Flight</button>
+    </div>
+    <div class="sched-grid" id="sched-grid">
+      <div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--muted)">
+        <div style="font-size:2rem;opacity:0.2;margin-bottom:1rem"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-icon lucide-calendar"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></div>
+        <div style="font-weight:700;color:var(--muted2)">No Scheduled Flights</div>
+        <div style="font-size:0.82rem;margin-top:6px">Click "+ Schedule Flight" to add one</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- COMPLETED -->
+<div id="section-completed" style="display:none;position:relative;z-index:1">
+  <div class="sched-wrap">
+    <div style="margin-bottom:1rem">
+      <h2 style="font-size:1.6rem;font-weight:800">Completed Flights</h2>
+      <div style="font-size:0.8rem;color:var(--muted);margin-top:3px">Flight history and logbook</div>
+    </div>
+    <div class="sched-grid" id="completed-grid">
+      <div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--muted)">
+        <div style="font-size:2rem;opacity:0.2;margin-bottom:1rem"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <div style="font-weight:700;color:var(--muted2)">No Completed Flights</div>
+        <div style="font-size:0.82rem;margin-top:6px">Mark flights as complete from the Scheduled tab</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- TAKEOFF PERFORMANCE -->
+<div id="section-perf" style="display:none;position:relative;z-index:1">
+  <div class="perf-wrap">
+    <div style="margin-bottom:1.2rem">
+      <h2 style="font-size:1.6rem;font-weight:800">Takeoff Performance Calculator</h2>
+      <div style="font-size:0.8rem;color:var(--muted);margin-top:3px">V-speeds, balanced field length and climb gradient</div>
+    </div>
+    <div class="perf-grid">
+      <div class="gcard">
+        <div class="gcard-header"><span class="gcard-title">Aircraft & Conditions</span></div>
+        <div class="gcard-body">
+          <div class="form-row s1" style="margin-bottom:8px">
+            <div class="form-group">
+              <div class="form-label">Aircraft</div>
+              <select class="gs" id="perf-ac">
+                <optgroup label="Airbus">
+                  <option value="A220|75000|narrow|2400">Airbus A220</option>
+                  <option value="A320|77000|narrow|2200">Airbus A320</option>
+                  <option value="A330|230000|wide|3000">Airbus A330-300</option>
+                  <option value="A350|280000|wide|3100">Airbus A350-900</option>
+                </optgroup>
+                <optgroup label="Boeing">
+                  <option value="B717|54000|narrow|1800">Boeing 717</option>
+                  <option value="B727|95000|narrow|2800">Boeing 727</option>
+                  <option value="B737|79000|narrow|2090">Boeing 737</option>
+                  <option value="B757|116000|narrow|2300">Boeing 757</option>
+                  <option value="B787|254000|wide|3100">Boeing 787</option>
+                  <option value="B777|347000|wide|3300">Boeing 777</option>
+                </optgroup>
+                <optgroup label="Other">
+                  <option value="M350|1800|ga|800">Piper M350</option>
+                  <option value="HAWKT1|9100|military|1600">BAE Hawk T1</option>
+                  <option value="TYPHOON|23500|military|500">Eurofighter Typhoon</option>
+                  <option value="DH8D|29257|turboprop|1400">Dash 8-Q400</option>
+                  <option value="C150|726|ga|400">Cessna 150A</option>
+                  <option value="C550|6033|bizjet|1100">Citation II</option>
+                  <option value="F100|45810|narrow|1840">Fokker 100</option>
+                  <option value="BE58|2449|ga|550">Baron G58</option>
+                  <option value="MD11|286000|wide|3300">MD-11</option>
+                </optgroup>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <div class="form-label">TOW (kg)</div>
+              <input type="number" class="gi" id="perf-tow" value="70000" />
+            </div>
+            <div class="form-group">
+              <div class="form-label">OAT (°C)</div>
+              <input type="number" class="gi" id="perf-oat" value="15" min="-50" max="55" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <div class="form-label">Elevation (ft)</div>
+              <input type="number" class="gi" id="perf-elev" value="0" min="0" max="14000" />
+            </div>
+            <div class="form-group">
+              <div class="form-label">QNH (hPa)</div>
+              <input type="number" class="gi" id="perf-qnh" value="1013" min="950" max="1050" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <div class="form-label">Headwind (kts)</div>
+              <input type="number" class="gi" id="perf-hw" value="0" min="-30" max="50" />
+            </div>
+            <div class="form-group">
+              <div class="form-label">Flap Setting</div>
+              <select class="gs" id="perf-flap">
+                <option value="1">Flaps 1 / 5°</option>
+                <option value="2" selected>Flaps 2 / 10°</option>
+                <option value="3">Flaps 3 / 15°</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <div class="form-label">Runway Condition</div>
+              <select class="gs" id="perf-rwy">
+                <option value="1">Dry</option>
+                <option value="1.1">Wet</option>
+                <option value="1.25">Contaminated</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <div class="form-label">Anti-ice</div>
+              <select class="gs" id="perf-ai">
+                <option value="0">Off</option>
+                <option value="1">Engine</option>
+                <option value="2">All</option>
+              </select>
+            </div>
+          </div>
+          <button class="gbtn" onclick="calcPerf()" style="margin-top:8px">Calculate Performance</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="perf-result" id="perf-result">
+          <div style="margin-bottom:1.2rem;padding-bottom:1rem;border-bottom:1px solid rgba(255,255,255,0.08)">
+            <div style="font-size:0.65rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:6px">Balanced Field Length Required</div>
+            <div class="perf-big" id="pr-bfl">—</div>
+            <div class="perf-sub" id="pr-bfl-sub">metres</div>
+            <div class="perf-bar-wrap" style="margin-top:12px">
+              <div class="perf-bar-track"><div class="perf-bar-fill" id="pr-bfl-bar" style="width:0%"></div></div>
+            </div>
+          </div>
+          <div class="panels" style="margin-bottom:0">
+            <div>
+              <div class="data-row"><span class="dk">V1 Decision Speed</span><span class="dv mono" id="pr-v1">—</span></div>
+              <div class="data-row"><span class="dk">VR Rotation Speed</span><span class="dv mono" id="pr-vr">—</span></div>
+              <div class="data-row"><span class="dk">V2 Safety Speed</span><span class="dv mono" id="pr-v2">—</span></div>
+              <div class="data-row"><span class="dk">Vapp Approach</span><span class="dv mono" id="pr-vapp">—</span></div>
+            </div>
+            <div>
+              <div class="data-row"><span class="dk">Density Altitude</span><span class="dv" id="pr-da">—</span></div>
+              <div class="data-row"><span class="dk">Pressure Alt</span><span class="dv" id="pr-pa">—</span></div>
+              <div class="data-row"><span class="dk">Climb Gradient</span><span class="dv g" id="pr-cg">—</span></div>
+              <div class="data-row"><span class="dk">Flex Temp</span><span class="dv" id="pr-flex">—</span></div>
+            </div>
+          </div>
+          <div class="perf-warning" id="perf-warning"></div>
+        </div>
+        <div style="margin-top:1rem" class="gcard">
+          <div class="gcard-header"><span class="gcard-title">Performance Notes</span></div>
+          <div class="gcard-body" style="font-size:0.8rem;color:var(--muted2);line-height:1.7">
+            <p>• V-speeds are <strong style="color:var(--text)">approximate</strong> based on aircraft class and weight</p>
+            <p style="margin-top:6px">• Density altitude accounts for temperature and QNH deviations from ISA</p>
+            <p style="margin-top:6px">• Field length adds 15% wet / 25% contaminated runway factor</p>
+            <p style="margin-top:6px">• Anti-ice ON reduces available thrust by ~3% (engine) or ~5% (all)</p>
+            <p style="margin-top:6px">• Results are for planning only — not for real-world use</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AIRPORTS -->
+<div id="section-airports" style="display:none;padding:2rem;position:relative;z-index:1;max-width:1100px;margin:0 auto">
+  <h2 style="font-size:1.6rem;font-weight:800;margin-bottom:1.2rem">Airports</h2>
+  <div id="apt-dir"></div>
+</div>
+
+<!-- FLEET -->
+<div id="section-fleet" style="display:none;padding:2rem;position:relative;z-index:1;max-width:1100px;margin:0 auto">
+  <h2 style="font-size:1.6rem;font-weight:800;margin-bottom:1.2rem">Fleet</h2>
+  <div id="fleet-dir" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px"></div>
+</div>
+
+<!-- WAYPOINTS -->
+<div id="section-waypoints" style="display:none;padding:2rem;position:relative;z-index:1;max-width:1100px;margin:0 auto">
+  <h2 style="font-size:1.6rem;font-weight:800;margin-bottom:1rem">Waypoints</h2>
+  <input type="text" class="gi" id="wp-pg-search" placeholder="Search waypoints…" style="margin-bottom:10px" oninput="filterPageWp()" />
+  <div style="font-size:0.73rem;color:var(--muted);margin-bottom:8px">Showing <b id="wp-shown">0</b> of <b id="wp-total">0</b></div>
+  <div id="wp-pg-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(95px,1fr));gap:4px;max-height:65vh;overflow-y:auto"></div>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// DATA
+// ══════════════════════════════════════
+const NODES={
+  LCLK:{x:92.5,y:100.5,type:'AIRPORT',name:'Larnaca'},
+  LCPH:{x:87.44,y:102.59,type:'AIRPORT',name:'Paphos'},
+  LCRA:{x:147.01,y:101.04,type:'AIRPORT',name:'RAF Akrotiri'},
+  MDAB:{x:92.37,y:102.59,type:'AIRPORT',name:'Arroyo Barril'},
+  MDCR:{x:84.97,y:102.75,type:'AIRPORT',name:'Cabo Rojo'},
+  MDST:{x:94.16,y:105.85,type:'AIRPORT',name:'Cibao'},
+  MDPC:{x:90.57,y:108.19,type:'AIRPORT',name:'Punta Cana'},
+  EFKT:{x:163.34,y:7.69,type:'AIRPORT',name:'Kittilä'},
+  MTCA:{x:83.77,y:107.16,type:'AIRPORT',name:'Antoine-Simon'},
+  GCLP:{x:73.71,y:105.63,type:'AIRPORT',name:'Gran Canaria'},
+  LEMH:{x:62.45,y:103.08,type:'AIRPORT',name:'Menorca'},
+  EGKK:{x:107.06,y:93.72,type:'AIRPORT',name:'Gatwick'},
+  EGHI:{x:92.64,y:94.53,type:'AIRPORT',name:'Southampton'},
+  MAROG:{x:92.37,y:102.59,type:'WAYPOINT'},PC199:{x:84.97,y:102.75,type:'WAYPOINT'},
+  PC103:{x:94.16,y:105.85,type:'WAYPOINT'},PC106:{x:90.57,y:108.19,type:'WAYPOINT'},
+  MIBNI:{x:83.77,y:107.16,type:'WAYPOINT'},PC200:{x:73.71,y:105.63,type:'WAYPOINT'},
+  ETBOD:{x:62.45,y:103.08,type:'WAYPOINT'},KATOK:{x:107.06,y:93.72,type:'WAYPOINT'},
+  PC114:{x:92.64,y:94.53,type:'WAYPOINT'},PC201:{x:84.43,y:93.55,type:'WAYPOINT'},
+  CHUMA:{x:93.35,y:83.87,type:'WAYPOINT'},PC202:{x:83.72,y:84.96,type:'WAYPOINT'},
+  PIXAR:{x:79.86,y:77.39,type:'WAYPOINT'},AGNAL:{x:74.74,y:102.31,type:'WAYPOINT'},
+  BEREL:{x:71.24,y:94.06,type:'WAYPOINT'},VOGEP:{x:63.06,y:85.38,type:'WAYPOINT'},
+  POKEG:{x:67.24,y:75,type:'WAYPOINT'},BETIR:{x:87.68,y:80,type:'WAYPOINT'},
+  ILOBI:{x:79.93,y:82.88,type:'WAYPOINT'},DASVO:{x:77.99,y:93.81,type:'WAYPOINT'},
+  PC203:{x:88.74,y:98.31,type:'WAYPOINT'},LETAD:{x:100.56,y:96.22,type:'WAYPOINT'},
+  VIRTO:{x:99.24,y:101.25,type:'WAYPOINT'},MESPA:{x:99.61,y:103.25,type:'WAYPOINT'},
+  ANTEX:{x:117.99,y:101.88,type:'WAYPOINT'},PIXES:{x:73.93,y:85.06,type:'WAYPOINT'},
+  MUNOZ:{x:109.75,y:89.25,type:'WAYPOINT'},ELTAN:{x:109.75,y:75.94,type:'WAYPOINT'},
+  GINRE:{x:136.95,y:73.81,type:'WAYPOINT'},MORSS:{x:148.82,y:61.44,type:'WAYPOINT'},
+  RIXOT:{x:148.82,y:44.56,type:'WAYPOINT'},MEROS:{x:136.7,y:49.81,type:'WAYPOINT'},
+  SARGO:{x:121.2,y:49.81,type:'WAYPOINT'},MADAS:{x:100.45,y:53.56,type:'WAYPOINT'},
+  CANDE:{x:79.08,y:53.56,type:'WAYPOINT'},PELIN:{x:67.24,y:60.31,type:'WAYPOINT'},
+  TUGPU:{x:174.82,y:37.44,type:'WAYPOINT'},AMULU:{x:151.94,y:31.44,type:'WAYPOINT'},
+  CARBO:{x:143.99,y:0,type:'WAYPOINT'},PELOR:{x:240,y:0,type:'WAYPOINT'},
+  RATSU:{x:79.08,y:0,type:'WAYPOINT'},HOIST:{x:0,y:0,type:'WAYPOINT'},
+  AMUBA:{x:240,y:37.44,type:'WAYPOINT'},BODLO:{x:0,y:75,type:'WAYPOINT'},
+  NEGON:{x:109.75,y:135,type:'WAYPOINT'},AMBIN:{x:0,y:135,type:'WAYPOINT'},
+  BALMA:{x:240,y:135,type:'WAYPOINT'},
+  PNA:{x:87.44,y:102.59,type:'VOR-DME'},
+  BONEK:{x:140.93,y:86.35,type:'WAYPOINT'},LUBES:{x:136.19,y:91.4,type:'WAYPOINT'},
+  KURSA:{x:135.96,y:99.25,type:'WAYPOINT'},DAROS:{x:146.57,y:87.84,type:'WAYPOINT'},
+  ADLAS:{x:151.13,y:89.03,type:'WAYPOINT'},NORDI:{x:145.45,y:95.6,type:'WAYPOINT'},
+  OTESA:{x:161.69,y:85.65,type:'WAYPOINT'},LK400:{x:161.65,y:88.59,type:'WAYPOINT'},
+  SOBOS:{x:167.26,y:89.15,type:'WAYPOINT'},RUDER:{x:171.94,y:87.96,type:'WAYPOINT'},
+  REXAL:{x:166.51,y:95.53,type:'WAYPOINT'},EMEDA:{x:164.63,y:103.46,type:'WAYPOINT'},
+  ROKIK:{x:164.38,y:86.15,type:'WAYPOINT'},MURAT:{x:171.57,y:85.15,type:'WAYPOINT'},
+  KRASI:{x:176.44,y:78.94,type:'WAYPOINT'},AMAKO:{x:167.32,y:93.53,type:'WAYPOINT'},
+  BOSIS:{x:162.69,y:99.15,type:'WAYPOINT'},BETID:{x:151.76,y:105.46,type:'WAYPOINT'},
+  ESERI:{x:134.7,y:106.59,type:'WAYPOINT'},NIMSI:{x:124.76,y:103.21,type:'WAYPOINT'},
+  LK601:{x:157.29,y:93.78,type:'WAYPOINT'},RIMEX:{x:153.07,y:97.96,type:'WAYPOINT'},
+  PEEKO:{x:148.38,y:95.9,type:'WAYPOINT'},GIPRO:{x:147.26,y:98.4,type:'WAYPOINT'},
+  KOBER:{x:171.94,y:94.95,type:'WAYPOINT'},
+  LCA:{x:159.82,y:91.21,type:'VOR-DME'},
+  BELOW:{x:150,y:50,type:'NDB'},
+  HAZEL:{x:123.14,y:35.02,type:'WAYPOINT'},MAY:{x:129.59,y:40.69,type:'VOR-DME'},
+  TEBRA:{x:138.75,y:31.63,type:'NDB'},BODSO:{x:134.38,y:23.81,type:'WAYPOINT'},
+  KONAN:{x:162.06,y:40.71,type:'WAYPOINT'},MIKEL:{x:114.25,y:27.75,type:'WAYPOINT'},
+  LEDGO:{x:105.44,y:42.44,type:'WAYPOINT'},KITTL:{x:163.34,y:7.69,type:'WAYPOINT'},
+  HTML:{x:161.59,y:2.31,type:'WAYPOINT'},KRDSH:{x:158,y:6.25,type:'WAYPOINT'},
+  KETF:{x:150.31,y:4.16,type:'WAYPOINT'},DELTA:{x:159.53,y:14.06,type:'WAYPOINT'},
+  ROSE:{x:152.34,y:18.84,type:'WAYPOINT'},ROBUX:{x:169,y:19.63,type:'NDB'},
+  LIMA:{x:163.25,y:25,type:'WAYPOINT'},SUDIP:{x:173.19,y:27.19,type:'WAYPOINT'},
+  KIT:{x:186.56,y:27.19,type:'WAYPOINT'},BRAVO:{x:178.56,y:35.5,type:'WAYPOINT'},
+  EFLA:{x:190.44,y:42.25,type:'WAYPOINT'},
+  KKWO6:{x:125.49,y:34.57,type:'WAYPOINT'},KKWO8:{x:121.56,y:35.46,type:'WAYPOINT'},
+  KKS11:{x:121.96,y:37.22,type:'WAYPOINT'},KKS2O:{x:122.68,y:39.93,type:'WAYPOINT'},
+  KKS25:{x:123.34,y:42.32,type:'WAYPOINT'},BOGNA:{x:127.46,y:46.54,type:'WAYPOINT'},
+  KKWO7:{x:124.91,y:34.72,type:'WAYPOINT'},KKWO9:{x:120.05,y:37.19,type:'WAYPOINT'},
+  NOVMA:{x:114.1,y:39.09,type:'WAYPOINT'},KKWO4:{x:124.46,y:34.94,type:'WAYPOINT'},
+  KKSO6:{x:124.7,y:36.02,type:'WAYPOINT'},KKSO9:{x:125.89,y:36.16,type:'WAYPOINT'},
+  KKS14:{x:133.76,y:37.92,type:'WAYPOINT'},KKS33:{x:138.07,y:37.12,type:'WAYPOINT'},
+  WIZAD:{x:142.78,y:36.28,type:'WAYPOINT'},VASUX:{x:118.65,y:47.12,type:'WAYPOINT'},
+  DISVO:{x:120.35,y:45.08,type:'WAYPOINT'},TELTU:{x:122.63,y:43.14,type:'WAYPOINT'},
+  HOLLY:{x:128.4,y:39.78,type:'WAYPOINT'},WILLO:{x:122.81,y:36.63,type:'WAYPOINT'},
+  TIMBA:{x:131.84,y:34.74,type:'WAYPOINT'},KKE64:{x:134.63,y:36.88,type:'WAYPOINT'},
+  AMDUT:{x:137.45,y:39.11,type:'WAYPOINT'},KUNAV:{x:143.19,y:44.26,type:'WAYPOINT'},
+  IMVUR:{x:118.39,y:31.35,type:'WAYPOINT'},KKEO5:{x:134.54,y:32.49,type:'WAYPOINT'},
+  KKNO9:{x:133.48,y:28.13,type:'WAYPOINT'},KKW19:{x:126.2,y:29.65,type:'WAYPOINT'},
+  KKEO3:{x:132.93,y:32.89,type:'WAYPOINT'},
+  SFD:{x:134.21,y:43.74,type:'VOR-DME'},TUNBY:{x:142.44,y:32.97,type:'WAYPOINT'},
+  DET:{x:142.99,y:30.5,type:'VOR-DME'},FRANE:{x:144.28,y:27.19,type:'WAYPOINT'},
+  ACORN:{x:129.19,y:30.62,type:'WAYPOINT'},EPSOM:{x:124.8,y:31.71,type:'WAYPOINT'},
+  VALDI:{x:129.71,y:-0.06,type:'WAYPOINT'},BEKET:{x:122.2,y:2.29,type:'WAYPOINT'},
+  OVDAN:{x:134.17,y:11.59,type:'WAYPOINT'},BEREP:{x:143.79,y:10.11,type:'WAYPOINT'},
+  RIMOL:{x:117.04,y:12.46,type:'WAYPOINT'},GOSAM:{x:116.41,y:21.06,type:'WAYPOINT'},
+  NEXUS:{x:123.84,y:19.5,type:'WAYPOINT'},LAKEY:{x:120.79,y:25.36,type:'WAYPOINT'},
+  GASKO:{x:125.09,y:25.05,type:'WAYPOINT'},DUFFY:{x:110.7,y:25.68,type:'WAYPOINT'},
+  LUSAT:{x:110.7,y:31.78,type:'WAYPOINT'},ERABI:{x:103.03,y:33.34,type:'WAYPOINT'},
+  WTD:{x:109.06,y:38.27,type:'NDB'},EMILI:{x:174.22,y:100.44,type:'WAYPOINT'},
+  PHA:{x:133.38,y:99.47,type:'VOR-DME'},ANANE:{x:138,y:116.03,type:'WAYPOINT'},
+  IREFA:{x:167.53,y:108.94,type:'WAYPOINT'},MEZUS:{x:124.28,y:108.94,type:'WAYPOINT'},
+};
+
+const APT_INFO={
+  LCLK:{name:'Larnaca International',city:'Larnaca',country:'🇨🇾 Cyprus',elev:'8 ft',rwy:'04/22',type:'International'},
+  LCPH:{name:'Paphos International',city:'Paphos',country:'🇨🇾 Cyprus',elev:'41 ft',rwy:'29/11',type:'International'},
+  LCRA:{name:'RAF Akrotiri',city:'Akrotiri',country:'🇨🇾 Cyprus',elev:'76 ft',rwy:'10/28',type:'Military'},
+  MDAB:{name:'Arroyo Barril',city:'Samaná',country:'🇩🇴 Dom. Republic',elev:'18 ft',rwy:'10/28',type:'Regional'},
+  MDCR:{name:'Cabo Rojo',city:'Pedernales',country:'🇩🇴 Dom. Republic',elev:'16 ft',rwy:'12/30',type:'Regional'},
+  MDST:{name:'Cibao International',city:'Santiago',country:'🇩🇴 Dom. Republic',elev:'565 ft',rwy:'08/26',type:'International'},
+  MDPC:{name:'Punta Cana International',city:'Punta Cana',country:'🇩🇴 Dom. Republic',elev:'47 ft',rwy:'09/27',type:'International'},
+  EFKT:{name:'Kittilä Airport',city:'Kittilä',country:'🇫🇮 Finland',elev:'644 ft',rwy:'16/34',type:'Regional'},
+  MTCA:{name:'Antoine-Simon',city:'Les Cayes',country:'🇭🇹 Haiti',elev:'203 ft',rwy:'11/29',type:'Regional'},
+  GCLP:{name:'Gran Canaria',city:'Las Palmas',country:'🇪🇸 Spain',elev:'78 ft',rwy:'03L/21R',type:'International'},
+  LEMH:{name:'Menorca Airport',city:'Mahón',country:'🇪🇸 Spain',elev:'302 ft',rwy:'01/19',type:'International'},
+  EGKK:{name:'London Gatwick',city:'London',country:'🇬🇧 UK',elev:'202 ft',rwy:'08L/26R',type:'International'},
+  EGHI:{name:'Southampton Airport',city:'Southampton',country:'🇬🇧 UK',elev:'44 ft',rwy:'02/20',type:'Regional'},
+};
+
+const NATIONS=[
+  {flag:'🇨🇾',name:'Cyprus',codes:['LCLK','LCPH','LCRA']},
+  {flag:'🇩🇴',name:'Dominican Republic',codes:['MDAB','MDCR','MDST','MDPC']},
+  {flag:'🇫🇮',name:'Finland',codes:['EFKT']},
+  {flag:'🇭🇹',name:'Haiti',codes:['MTCA']},
+  {flag:'🇪🇸',name:'Spain',codes:['GCLP','LEMH']},
+  {flag:'🇬🇧',name:'United Kingdom',codes:['EGKK','EGHI']},
+];
+
+const FLEET=[
+  {m:'Airbus',n:'A220',s:450,t:'Narrow-body'},
+  {m:'Airbus',n:'A320',s:450,t:'Narrow-body'},
+  {m:'Airbus',n:'A330-300',s:470,t:'Wide-body'},
+  {m:'Airbus',n:'A350-900',s:480,t:'Wide-body'},
+  {m:'Boeing',n:'717',s:430,t:'Narrow-body'},
+  {m:'Boeing',n:'727',s:420,t:'Narrow-body'},
+  {m:'Boeing',n:'737',s:450,t:'Narrow-body'},
+  {m:'Boeing',n:'757',s:460,t:'Narrow-body'},
+  {m:'Boeing',n:'787',s:488,t:'Wide-body'},
+  {m:'Boeing',n:'777',s:490,t:'Wide-body'},
+  {m:'Piper',n:'M350',s:170,t:'GA'},
+  {m:'BAE Systems',n:'Hawk T1',s:450,t:'Military'},
+  {m:'BAE Systems',n:'Eurofighter Typhoon',s:1000,t:'Military'},
+  {m:'Bombardier',n:'Dash 8-Q400',s:270,t:'Turboprop'},
+  {m:'Cessna',n:'150A',s:90,t:'GA'},
+  {m:'Cessna',n:'Citation II',s:340,t:'Business Jet'},
+  {m:'Fokker',n:'100',s:410,t:'Narrow-body'},
+  {m:'Beechcraft',n:'Baron G58',s:190,t:'GA'},
+  {m:'McDonnell Douglas',n:'MD-11',s:475,t:'Wide-body'},
+];
+
+const NAV_PTS=Object.entries(NODES).filter(([k,v])=>v.type!=='AIRPORT').map(([k,v])=>({id:k,...v})).sort((a,b)=>a.id.localeCompare(b.id));
+
+// STATE
+let routeMiddle=[];
+let wpType='ALL';
+let schedFlights=JSON.parse(localStorage.getItem('pf_sched')||'[]');
+let lastOFP=null;
+
+const PF_SCALE=0.364;
+
+// HELPERS
+const md=(a,b)=>Math.sqrt((b.x-a.x)**2+(b.y-a.y)**2);
+const rnd=(a,b)=>a+Math.random()*(b-a);
+function fmt(m){if(m<1)return'<1m';if(m<60)return Math.round(m)+'m';return Math.floor(m/60)+'h '+Math.round(m%60)+'m';}
+function nowUTC(){return new Date().toUTCString().replace(' GMT','Z');}
+function bearing(a,b){const dx=b.x-a.x,dy=b.y-a.y;let deg=Math.round(Math.atan2(dx,-dy)*180/Math.PI);if(deg<0)deg+=360;return deg.toString().padStart(3,'0')+'°';}
+
+// ── WP GRID
+function setWpType(btn){document.querySelectorAll('.wtt').forEach(b=>b.classList.remove('on'));btn.classList.add('on');wpType=btn.dataset.t;refreshWpGrid();}
+function refreshWpGrid(){
+  const q=document.getElementById('wp-sb-search').value.toUpperCase().trim();
+  const g=document.getElementById('wp-sb-grid');g.innerHTML='';
+  const f=NAV_PTS.filter(w=>(wpType==='ALL'||w.type===wpType)&&(!q||w.id.includes(q))).slice(0,80);
+  if(!f.length){g.innerHTML='<div class="wp-item none">No results</div>';return;}
+  f.forEach(w=>{
+    const el=document.createElement('div');
+    el.className='wp-item'+(w.type==='VOR-DME'?' vor':w.type==='NDB'?' ndb':'');
+    el.textContent=w.id;
+    el.addEventListener('click',()=>{routeMiddle.push(w.id);refreshStrip();});
+    g.appendChild(el);
+  });
+}
+
+// ── ROUTE STRIP
+function refreshStrip(){
+  const dep=document.getElementById('dep-select').value;
+  const arr=document.getElementById('arr-select').value;
+  const c=document.getElementById('route-strip-nodes');c.innerHTML='';
+  if(!dep&&!arr&&!routeMiddle.length){c.innerHTML='<span class="rs-empty">Select DEP and ARR to begin</span>';return;}
+  const addNode=(lbl,isApt,idx)=>{
+    const n=document.createElement('span');n.className='rs-node '+(isApt?'apt':'fix');n.textContent=lbl;
+    if(idx!==undefined){const x=document.createElement('span');x.className='rs-rm';x.textContent=' ✕';x.addEventListener('click',()=>{routeMiddle.splice(idx,1);refreshStrip();});n.appendChild(x);}
+    c.appendChild(n);
+  };
+  const addArr=()=>{const a=document.createElement('span');a.className='rs-arr';a.textContent='›';c.appendChild(a);};
+  if(dep)addNode(dep,true);
+  routeMiddle.forEach((w,i)=>{addArr();addNode(w,false,i);});
+  if(arr){addArr();addNode(arr,true);}
+}
+
+function swapApts(){const d=document.getElementById('dep-select'),a=document.getElementById('arr-select');const t=d.value;d.value=a.value;a.value=t;refreshStrip();}
+
+// ── GENERATE OFP
+function generateOFP(){
+  const dep=document.getElementById('dep-select').value;
+  const arr=document.getElementById('arr-select').value;
+  const altn=document.getElementById('altn-select').value;
+  const fltNo=(document.getElementById('flt-number').value||'PF001').toUpperCase();
+  const acRaw=document.getElementById('ac-select').value;
+  const fl=parseInt(document.getElementById('cruise-fl').value)||350;
+  const pax=parseInt(document.getElementById('pax-count').value)||0;
+  const cargo=parseInt(document.getElementById('cargo-kg').value)||0;
+  const ci=parseInt(document.getElementById('cost-index').value)||50;
+  const resMin=parseInt(document.getElementById('reserve-min').value)||45;
+  const err=document.getElementById('gen-error');
+  err.style.display='none';
+  if(!dep||!arr){err.style.display='block';err.textContent='Select departure and destination.';return;}
+  if(dep===arr){err.style.display='block';err.textContent='DEP and ARR cannot be the same.';return;}
+  const [acType,ktsStr,fuelCap,acClass]=acRaw.split('|');
+  const kts=parseInt(ktsStr);
+  const sUpm=(kts*PF_SCALE)/60;
+  const keys=[dep,...routeMiddle,arr];
+  for(const k of keys){if(!NODES[k]){err.style.display='block';err.textContent=`"${k}" not found.`;return;}}
+  showLoad('Generating flight plan…');
+  setTimeout(()=>{
+    let totalDist=0;const legs=[];
+    for(let i=0;i<keys.length-1;i++){const a=NODES[keys[i]],b=NODES[keys[i+1]];const d=md(a,b),t=d/sUpm;totalDist+=d;legs.push({from:keys[i],to:keys[i+1],dist:d,time:t,brg:bearing(a,b)});}
+    const totalTime=totalDist/sUpm;
+    let altnDist=0,altnTime=0;
+    if(altn&&NODES[altn]){altnDist=md(NODES[arr],NODES[altn]);altnTime=altnDist/sUpm;}
+    const burns={wide:8,narrow:5,turboprop:2.5,ga:0.8,bizjet:2,military:7};
+    const br=burns[acClass]||5;
+    const tripF=Math.round(totalTime*br),altnF=Math.round(altnTime*br),resF=Math.round(resMin*br),taxiF=Math.round(br*5);
+    const totF=tripF+altnF+resF+taxiF;const maxF=parseInt(fuelCap);const fPct=Math.min(100,Math.round((totF/maxF)*100));
+    const paxKg=pax*95;const tow=paxKg+cargo+totF*3+Math.round(rnd(20000,80000));const lw=tow-tripF*3;const zfw=tow-totF*3;
+    lastOFP={dep,arr,altn,fltNo,acType,kts,fl,pax,cargo,ci,totalDist,totalTime,altnDist,altnTime,tripF,altnF,resF,taxiF,totF,maxF,fPct,tow,lw,zfw,br,keys,legs,acClass,resMin};
+    renderOFP(lastOFP);
+    hideLoad();
+  },700);
+}
+
+function renderOFP(d){
+  const di=APT_INFO[d.dep]||{name:d.dep,city:'',country:'',elev:'',rwy:''},ai=APT_INFO[d.arr]||{name:d.arr,city:'',country:'',elev:'',rwy:''};
+  const ali=d.altn?APT_INFO[d.altn]:null;
+  document.getElementById('hdr-dep').textContent=d.dep;
+  document.getElementById('hdr-dep-name').textContent=di.name;
+  document.getElementById('hdr-arr').textContent=d.arr;
+  document.getElementById('hdr-arr-name').textContent=ai.name;
+  document.getElementById('hdr-fltno').textContent=d.fltNo;
+  document.getElementById('hdr-ac').textContent=d.acType;
+  document.getElementById('hdr-block').textContent=fmt(d.totalTime+10);
+  document.getElementById('hdr-dist').textContent=d.totalDist.toFixed(1);
+  document.getElementById('hdr-fl').textContent='FL'+d.fl;
+  document.getElementById('gen-time').textContent=nowUTC();
+
+  // status
+  const sb=document.getElementById('status-bar');sb.innerHTML='';
+  [{cls:'spill-g',t:'Route Valid'},{cls:'spill-w',t:`FL${d.fl} / ${d.kts} kts`},
+   {cls:d.fPct<90?'spill-g':'spill-y',t:`Fuel ${d.fPct}% cap`},
+   {cls:'spill-w',t:`${d.pax} PAX`},
+   ...(d.altn?[{cls:'spill-g',t:`ALTN: ${d.altn}`}]:[]),
+   {cls:'spill-w',t:`${d.keys.length} fixes`}
+  ].forEach(p=>{const e=document.createElement('div');e.className='spill '+p.cls;e.innerHTML=`<span class="sdot"></span>${p.t}`;sb.appendChild(e);});
+
+  // panels r1
+  document.getElementById('panels-r1').innerHTML=`
+    <div class="gcard">
+      <div class="gcard-header"><span class="gcard-title">Flight Times</span><span class="gbadge gbadge-w">${fmt(d.totalTime)}</span></div>
+      <div class="gcard-body">
+        <div class="data-row"><span class="dk">Trip Time</span><span class="dv">${fmt(d.totalTime)}</span></div>
+        <div class="data-row"><span class="dk">Block Time</span><span class="dv">${fmt(d.totalTime+10)}</span></div>
+        ${d.altn?`<div class="data-row"><span class="dk">ALTN Time</span><span class="dv">${fmt(d.altnTime)}</span></div>`:''}
+        <div class="data-row"><span class="dk">Reserve</span><span class="dv">${d.resMin} min</span></div>
+        <div class="data-row"><span class="dk">Cruise Speed</span><span class="dv">${d.kts} kts</span></div>
+        <div class="data-row"><span class="dk">Cruise Level</span><span class="dv">FL${d.fl}</span></div>
+        <div class="data-row"><span class="dk">Distance</span><span class="dv">${d.totalDist.toFixed(1)} u</span></div>
+        <div class="data-row"><span class="dk">Cost Index</span><span class="dv">${d.ci}</span></div>
+      </div>
+    </div>
+    <div class="gcard">
+      <div class="gcard-header"><span class="gcard-title">Fuel Plan</span><span class="gbadge ${d.fPct<90?'gbadge-g':'gbadge-y'}">${d.totF} units</span></div>
+      <div class="gcard-body">
+        <div class="data-row"><span class="dk">Trip Fuel</span><span class="dv g">${d.tripF}</span></div>
+        <div class="data-row"><span class="dk">Alternate</span><span class="dv">${d.altnF}</span></div>
+        <div class="data-row"><span class="dk">Reserve</span><span class="dv">${d.resF}</span></div>
+        <div class="data-row"><span class="dk">Taxi</span><span class="dv">${d.taxiF}</span></div>
+        <div class="data-row"><span class="dk">Total Required</span><span class="dv ${d.fPct<95?'g':'r'}">${d.totF}</span></div>
+        <div class="data-row"><span class="dk">Max Capacity</span><span class="dv">${d.maxF}</span></div>
+        <div style="margin-top:10px">
+          <div class="fbar-wrap"><div class="fbar-lbl"><span>Trip</span><span>${d.tripF}</span></div><div class="fbar-track"><div class="fbar-fill fg" style="width:${Math.min(100,(d.tripF/d.maxF)*100)}%"></div></div></div>
+          <div class="fbar-wrap"><div class="fbar-lbl"><span>Reserve</span><span>${d.resF}</span></div><div class="fbar-track"><div class="fbar-fill fw" style="width:${Math.min(100,(d.resF/d.maxF)*100)}%"></div></div></div>
+          <div class="fbar-wrap"><div class="fbar-lbl"><span>Total</span><span>${d.totF}/${d.maxF}</span></div><div class="fbar-track"><div class="fbar-fill ${d.fPct<90?'fg':d.fPct<100?'fy':'fo'}" style="width:${d.fPct}%"></div></div></div>
+        </div>
+      </div>
+    </div>`;
+
+  // panels r2
+  document.getElementById('panels-r2').innerHTML=`
+    <div class="gcard">
+      <div class="gcard-header"><span class="gcard-title">Weights</span></div>
+      <div class="gcard-body">
+        <div class="data-row"><span class="dk">TOW</span><span class="dv mono">${d.tow.toLocaleString()} kg</span></div>
+        <div class="data-row"><span class="dk">LDW</span><span class="dv mono">${d.lw.toLocaleString()} kg</span></div>
+        <div class="data-row"><span class="dk">ZFW</span><span class="dv mono">${d.zfw.toLocaleString()} kg</span></div>
+        <div class="data-row"><span class="dk">Passengers</span><span class="dv">${d.pax} × 95 kg</span></div>
+        <div class="data-row"><span class="dk">Cargo</span><span class="dv">${d.cargo.toLocaleString()} kg</span></div>
+      </div>
+    </div>
+    <div class="gcard">
+      <div class="gcard-header"><span class="gcard-title">Departure</span><span class="gbadge gbadge-w">${d.dep}</span></div>
+      <div class="gcard-body">
+        <div class="data-row"><span class="dk">Airport</span><span class="dv">${di.name}</span></div>
+        <div class="data-row"><span class="dk">Country</span><span class="dv">${di.country}</span></div>
+        <div class="data-row"><span class="dk">Elevation</span><span class="dv">${di.elev}</span></div>
+        <div class="data-row"><span class="dk">Runway</span><span class="dv mono">${di.rwy}</span></div>
+      </div>
+    </div>
+    <div class="gcard">
+      <div class="gcard-header"><span class="gcard-title">Destination</span><span class="gbadge gbadge-g">${d.arr}</span></div>
+      <div class="gcard-body">
+        <div class="data-row"><span class="dk">Airport</span><span class="dv">${ai.name}</span></div>
+        <div class="data-row"><span class="dk">Country</span><span class="dv">${ai.country}</span></div>
+        <div class="data-row"><span class="dk">Elevation</span><span class="dv">${ai.elev}</span></div>
+        <div class="data-row"><span class="dk">Runway</span><span class="dv mono">${ai.rwy}</span></div>
+        ${ali?`<div class="data-row"><span class="dk">Alternate</span><span class="dv mono">${d.altn}</span></div>`:''}
+      </div>
+    </div>`;
+
+  // route table
+  document.getElementById('rt-count').textContent=`${d.keys.length} fixes`;
+  const tbody=document.getElementById('rt-body');tbody.innerHTML='';
+  let cDist=0,cTime=0,cFuel=0;
+  d.keys.forEach((k,i)=>{
+    const leg=d.legs[i];const node=NODES[k];const isApt=node.type==='AIRPORT';
+    if(leg){cDist+=leg.dist;cTime+=leg.time;cFuel+=leg.dist*d.br/60*60;}
+    const fuelRem=Math.max(0,Math.round(d.totF-cFuel));
+    const row=document.createElement('div');
+    row.className='rt-row'+(isApt?' apt':'');
+    row.innerHTML=`<span class="rtfix">${k}</span>
+      <span class="rttype">${isApt?'APT':node.type==='VOR-DME'?'VOR':node.type==='NDB'?'NDB':'FIX'}</span>
+      <span class="rttype">${leg?leg.brg:'-'}</span>
+      <span class="rtnum">${leg?leg.dist.toFixed(1):'-'}</span>
+      <span class="rttime">${leg?fmt(leg.time):'-'}</span>
+      <span class="rttime">${cTime>0?fmt(cTime):'-'}</span>
+      <span class="rtfuel">${i===d.keys.length-1?'—':fuelRem}</span>`;
+    tbody.appendChild(row);
+  });
+
+  // weather
+  document.getElementById('wx-panels').innerHTML=`
+    <div class="gcard">
+      <div class="gcard-header"><span class="gcard-title">DEP Weather — ${d.dep}</span><span class="gbadge gbadge-g">VFR</span></div>
+      <div class="gcard-body">
+        <div class="wx-raw">${d.dep} ${genMETAR(d.dep)}</div>
+        <div class="wx-dec">
+          <div class="wxitem"><div class="wxl">Wind</div><div class="wxv">${Math.round(rnd(0,360)).toString().padStart(3,'0')}/${Math.round(rnd(0,20))} kts</div></div>
+          <div class="wxitem"><div class="wxl">Visibility</div><div class="wxv">${Math.round(rnd(8,10))} SM</div></div>
+          <div class="wxitem"><div class="wxl">Category</div><div class="wxv cat-v">VFR</div></div>
+          <div class="wxitem"><div class="wxl">Temp/Dew</div><div class="wxv">${Math.round(rnd(12,28))}/${Math.round(rnd(5,12))}°C</div></div>
+          <div class="wxitem"><div class="wxl">QNH</div><div class="wxv">${Math.round(rnd(1008,1022))} hPa</div></div>
+          <div class="wxitem"><div class="wxl">Clouds</div><div class="wxv">FEW${Math.round(rnd(25,50))*100}</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="gcard">
+      <div class="gcard-header"><span class="gcard-title">ARR Weather — ${d.arr}</span><span class="gbadge gbadge-g">VFR</span></div>
+      <div class="gcard-body">
+        <div class="wx-raw">${d.arr} ${genMETAR(d.arr)}</div>
+        <div class="wx-dec">
+          <div class="wxitem"><div class="wxl">Wind</div><div class="wxv">${Math.round(rnd(0,360)).toString().padStart(3,'0')}/${Math.round(rnd(0,20))} kts</div></div>
+          <div class="wxitem"><div class="wxl">Visibility</div><div class="wxv">${Math.round(rnd(8,10))} SM</div></div>
+          <div class="wxitem"><div class="wxl">Category</div><div class="wxv cat-v">VFR</div></div>
+          <div class="wxitem"><div class="wxl">Temp/Dew</div><div class="wxv">${Math.round(rnd(12,28))}/${Math.round(rnd(5,12))}°C</div></div>
+          <div class="wxitem"><div class="wxl">QNH</div><div class="wxv">${Math.round(rnd(1008,1022))} hPa</div></div>
+          <div class="wxitem"><div class="wxl">Clouds</div><div class="wxv">FEW${Math.round(rnd(25,50))*100}</div></div>
+        </div>
+      </div>
+    </div>`;
+
+  // NOTAMs
+  const notams=genNOTAMs(d.dep,d.arr);
+  document.getElementById('notam-panel').innerHTML=notams.map(n=>`
+    <div class="notam-item">
+      <div class="nt">${n.type} · ${n.icao} · ${n.valid}</div>
+      <strong>${n.title}</strong> — ${n.body}
+    </div>`).join('');
+
+  // raw OFP
+  document.getElementById('ofp-raw-text').innerHTML=
+`<span class="ofp-hi">═══════════════════════════════════════════════════
+  PROJECT FLIGHT DISPATCH — OPERATIONAL FLIGHT PLAN
+═══════════════════════════════════════════════════</span>
+
+<span class="ofp-acc">FLIGHT NUMBER:</span> ${d.fltNo}
+<span class="ofp-acc">DATE:</span>          ${new Date().toDateString().toUpperCase()}
+<span class="ofp-acc">DEP / ARR:</span>     ${d.dep} / ${d.arr}${d.altn?' / ALTN '+d.altn:''}
+<span class="ofp-acc">AIRCRAFT:</span>      ${d.acType}
+<span class="ofp-acc">CRUISE FL:</span>     FL${d.fl}   COST INDEX: ${d.ci}
+
+<span class="ofp-hi">── ROUTE ──────────────────────────────────────────</span>
+${d.keys.join(' ')}
+
+<span class="ofp-hi">── PERFORMANCE ────────────────────────────────────</span>
+CRUISE SPEED:  ${d.kts} KTS TAS     FL${d.fl}
+TRIP DISTANCE: ${d.totalDist.toFixed(1)} MAP UNITS
+TRIP TIME:     ${fmt(d.totalTime)}      BLOCK: ${fmt(d.totalTime+10)}
+
+<span class="ofp-hi">── FUEL PLAN ───────────────────────────────────────</span>
+<span class="ofp-grn">TRIP FUEL:     ${d.tripF}</span>
+ALTERNATE:     ${d.altnF}
+RESERVE:       ${d.resF}
+TAXI:          ${d.taxiF}
+<span class="ofp-hi">TOTAL:         ${d.totF} / ${d.maxF} (${d.fPct}%)</span>
+
+<span class="ofp-hi">── WEIGHTS ─────────────────────────────────────────</span>
+PAX: ${d.pax}   CARGO: ${d.cargo} KG
+TOW: ${d.tow.toLocaleString()} KG   LDW: ${d.lw.toLocaleString()} KG   ZFW: ${d.zfw.toLocaleString()} KG
+
+<span class="ofp-hi">── ROUTE LOG ───────────────────────────────────────</span>
+FIX          TYPE   TRK    DIST   ETE
+${d.keys.map((k,i)=>{const leg=d.legs[i];return k.padEnd(13)+(NODES[k].type==='AIRPORT'?'APT':NODES[k].type==='VOR-DME'?'VOR':NODES[k].type==='NDB'?'NDB':'FIX').padEnd(7)+(leg?leg.brg:'---').padEnd(7)+(leg?leg.dist.toFixed(1).padEnd(7):'---    ')+(leg?fmt(leg.time):'');}).join('\n')}
+
+<span class="ofp-hi">── GENERATED ───────────────────────────────────────</span>
+PF DISPATCH · MACH 2 STUDIOS
+PFEVENT CONTROL: https://pfevent-control.onrender.com/
+${nowUTC()}
+═══════════════════════════════════════════════════`;
+
+  document.getElementById('empty-state').style.display='none';
+  document.getElementById('ofp-wrap').classList.add('visible');
+}
+
+function genMETAR(icao){
+  const n=new Date();
+  const d=n.getUTCDate().toString().padStart(2,'0');
+  const h=n.getUTCHours().toString().padStart(2,'0');
+  const m=n.getUTCMinutes().toString().padStart(2,'0');
+  const w=Math.round(rnd(0,360)).toString().padStart(3,'0')+Math.round(rnd(0,20)).toString().padStart(2,'0')+'KT';
+  const t=Math.round(rnd(10,28)),dw=t-Math.round(rnd(2,8));
+  return `${d}${h}${m}Z ${w} ${Math.round(rnd(8,10))}SM FEW${Math.round(rnd(25,45))*100} ${t}/${dw} Q${Math.round(rnd(1008,1022))} NOSIG`;
+}
+
+function genNOTAMs(dep,arr){
+  const items=[
+    {type:'NOTAM',icao:dep,valid:'FROM '+nowUTC().slice(0,11),title:'Runway maintenance',body:`Taxiway alpha closed for maintenance. Use alternate routing.`},
+    {type:'NOTAM',icao:arr,valid:'PERM',title:'ILS approach',body:`ILS RWY available. Check NOTAMs for latest approach procedures.`},
+    {type:'PIREP',icao:'ENROUTE',valid:'CURRENT',title:'Moderate turbulence',body:`Moderate turbulence reported between FL180-FL240 along route. Expect smooth above FL280.`},
+    {type:'SIGMET',icao:'AREA',valid:'NEXT 4HR',title:'CB activity',body:`Isolated CB development possible. Exercise caution and deviate as needed.`},
+  ];
+  return items;
+}
+
+function clearAll(){
+  routeMiddle=[];
+  ['dep-select','arr-select','altn-select'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('flt-number').value='';
+  document.getElementById('gen-error').style.display='none';
+  refreshStrip();
+  document.getElementById('empty-state').style.display='flex';
+  document.getElementById('ofp-wrap').classList.remove('visible');
+  lastOFP=null;
+}
+
+function copyOFP(){
+  const t=document.getElementById('ofp-raw-text').innerText;
+  navigator.clipboard.writeText(t).then(()=>alert('OFP copied!'));
+}
+
+// ── SCHEDULED FLIGHTS
+function saveSched(){localStorage.setItem('pf_sched',JSON.stringify(schedFlights));}
+
+function renderSchedGrid(){
+  const g=document.getElementById('sched-grid');
+  const active=schedFlights.filter(f=>!f.completed);
+  if(!active.length){
+    g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--muted)">
+      <div style="font-size:2rem;opacity:0.2;margin-bottom:1rem"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar-icon lucide-calendar"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg></div>
+      <div style="font-weight:700;color:var(--muted2)">No Scheduled Flights</div>
+      <div style="font-size:0.82rem;margin-top:6px">Click "+ Schedule Flight" to add one</div>
+    </div>`;return;
+  }
+  g.innerHTML=active.map((f,i)=>`
+    <div class="sched-card">
+      <div class="sched-card-top">
+        <div class="sched-route">${f.dep} → ${f.arr}</div>
+        <div class="sched-status ss-sched">Scheduled</div>
+      </div>
+      <div class="sched-card-meta">
+        <div class="sm-item"><div class="sm-l">Flight</div><div class="sm-v">${f.fltNo}</div></div>
+        <div class="sm-item"><div class="sm-l">Aircraft</div><div class="sm-v">${f.ac}</div></div>
+        <div class="sm-item"><div class="sm-l">Date</div><div class="sm-v">${f.date}</div></div>
+        <div class="sm-item"><div class="sm-l">STD / STA</div><div class="sm-v">${f.std}Z – ${f.sta}Z</div></div>
+        ${f.notes?`<div class="sm-item" style="grid-column:1/-1"><div class="sm-l">Notes</div><div class="sm-v">${f.notes}</div></div>`:''}
+      </div>
+      <div class="sched-card-footer">
+        <button class="sched-btn sb-complete" onclick="completeSchedFlight(${schedFlights.indexOf(f)})"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check"><path d="M20 6 9 17l-5-5"/></svg> Complete</button>
+        <button class="sched-btn sb-delete" onclick="deleteSchedFlight(${schedFlights.indexOf(f)})">✕ Delete</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderCompletedGrid(){
+  const g=document.getElementById('completed-grid');
+  const done=schedFlights.filter(f=>f.completed);
+  if(!done.length){
+    g.innerHTML=`<div style="grid-column:1/-1;text-align:center;padding:4rem;color:var(--muted)">
+      <div style="font-size:2rem;opacity:0.2;margin-bottom:1rem"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check"><path d="M20 6 9 17l-5-5"/></svg></div>
+      <div style="font-weight:700;color:var(--muted2)">No Completed Flights</div>
+      <div style="font-size:0.82rem;margin-top:6px">Mark flights as complete from the Scheduled tab</div>
+    </div>`;return;
+  }
+  g.innerHTML=done.map((f,i)=>`
+    <div class="sched-card" style="opacity:0.8">
+      <div class="sched-completed-badge"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check-icon lucide-check"><path d="M20 6 9 17l-5-5"/></svg></div>
+      <div class="sched-card-top">
+        <div class="sched-route">${f.dep} → ${f.arr}</div>
+        <div class="sched-status ss-done">Completed</div>
+      </div>
+      <div class="sched-card-meta">
+        <div class="sm-item"><div class="sm-l">Flight</div><div class="sm-v">${f.fltNo}</div></div>
+        <div class="sm-item"><div class="sm-l">Aircraft</div><div class="sm-v">${f.ac}</div></div>
+        <div class="sm-item"><div class="sm-l">Date</div><div class="sm-v">${f.date}</div></div>
+        <div class="sm-item"><div class="sm-l">Completed</div><div class="sm-v">${f.completedAt||'—'}</div></div>
+      </div>
+      <div class="sched-card-footer">
+        <button class="sched-btn sb-delete" onclick="deleteSchedFlight(${schedFlights.indexOf(f)})">✕ Remove</button>
+      </div>
+    </div>`).join('');
+}
+
+function completeSchedFlight(idx){
+  schedFlights[idx].completed=true;
+  schedFlights[idx].completedAt=new Date().toLocaleDateString();
+  saveSched();renderSchedGrid();renderCompletedGrid();
+}
+
+function deleteSchedFlight(idx){
+  if(confirm('Delete this flight?')){schedFlights.splice(idx,1);saveSched();renderSchedGrid();renderCompletedGrid();}
+}
+
+function openModal(){document.getElementById('sched-modal').classList.add('show');document.getElementById('sm-date').value=new Date().toISOString().split('T')[0];}
+function closeModal(){document.getElementById('sched-modal').classList.remove('show');}
+
+function saveScheduledFlight(){
+  const dep=document.getElementById('sm-dep').value;
+  const arr=document.getElementById('sm-arr').value;
+  if(!dep||!arr){alert('Select departure and destination');return;}
+  schedFlights.push({
+    dep,arr,
+    fltNo:document.getElementById('sm-fltno').value||'PF001',
+    ac:document.getElementById('sm-ac').value,
+    date:document.getElementById('sm-date').value,
+    std:document.getElementById('sm-std').value||'00:00',
+    sta:document.getElementById('sm-sta').value||'00:00',
+    notes:document.getElementById('sm-notes').value,
+    completed:false,
+    id:Date.now(),
+  });
+  saveSched();renderSchedGrid();closeModal();showSection('scheduled');
+}
+
+function schedFromCurrent(){
+  if(!lastOFP){alert('Generate a flight plan first.');return;}
+  openModal();
+  document.getElementById('sm-dep').value=lastOFP.dep;
+  document.getElementById('sm-arr').value=lastOFP.arr;
+  document.getElementById('sm-fltno').value=lastOFP.fltNo;
+}
+
+// ── TAKEOFF PERFORMANCE
+function calcPerf(){
+  const acRaw=document.getElementById('perf-ac').value;
+  const [acType,mtow,acClass,baseFL]=acRaw.split('|');
+  const tow=parseFloat(document.getElementById('perf-tow').value)||parseFloat(mtow)*0.85;
+  const oat=parseFloat(document.getElementById('perf-oat').value)||15;
+  const elev=parseFloat(document.getElementById('perf-elev').value)||0;
+  const qnh=parseFloat(document.getElementById('perf-qnh').value)||1013;
+  const hw=parseFloat(document.getElementById('perf-hw').value)||0;
+  const flapF=parseFloat(document.getElementById('perf-flap').value)||2;
+  const rwyF=parseFloat(document.getElementById('perf-rwy').value)||1;
+  const aiF=parseFloat(document.getElementById('perf-ai').value)||0;
+
+  // pressure alt
+  const pa=Math.round(elev+(1013-qnh)*27);
+  // density alt
+  const isa=15-(elev*0.00198);
+  const daTmp=oat-isa;
+  const da=Math.round(pa+daTmp*120);
+
+  // base V1/VR/V2 based on MTOW & acClass
+  const mtowN=parseFloat(mtow);
+  const wRatio=Math.min(1,tow/mtowN);
+  const baseSpeeds={ga:[55,60,65,80],bizjet:[90,100,110,130],turboprop:[85,95,105,120],narrow:[130,140,150,145],wide:[145,155,165,155],military:[140,155,165,160]};
+  const sp=baseSpeeds[acClass]||baseSpeeds.narrow;
+  const wFact=0.85+wRatio*0.15;
+  const altFact=1+da*0.00002;
+  const flapFact=flapF===1?1.05:flapF===2?1.0:0.95;
+  const hwFact=1-hw*0.003;
+  const aiPenalty=aiF===0?1:aiF===1?0.97:0.95;
+
+  const v1=Math.round(sp[0]*wFact*altFact*flapFact*hwFact);
+  const vr=Math.round(sp[1]*wFact*altFact*flapFact*hwFact);
+  const v2=Math.round(sp[2]*wFact*altFact*flapFact*hwFact);
+  const vapp=Math.round(sp[3]*wFact*flapFact);
+
+  // BFL
+  const baseBFL=parseFloat(baseFL);
+  const bfl=Math.round(baseBFL*wFact*altFact*(1/flapFact)*rwyF*(1/hwFact)*(1/aiPenalty));
+  const bflPct=Math.min(100,Math.round((bfl/5000)*100));
+
+  // climb gradient (%)
+  const cg=(5-wRatio*2-daTmp*0.05).toFixed(1);
+
+  // flex temp
+  const flex=Math.round(oat+15*(1-wRatio));
+
+  document.getElementById('pr-v1').textContent=v1+' kts';
+  document.getElementById('pr-vr').textContent=vr+' kts';
+  document.getElementById('pr-v2').textContent=v2+' kts';
+  document.getElementById('pr-vapp').textContent=vapp+' kts';
+  document.getElementById('pr-da').textContent=da.toLocaleString()+' ft';
+  document.getElementById('pr-pa').textContent=pa.toLocaleString()+' ft';
+  document.getElementById('pr-cg').textContent=cg+'%';
+  document.getElementById('pr-flex').textContent=flex+'°C';
+  document.getElementById('pr-bfl').textContent=bfl.toLocaleString();
+  document.getElementById('pr-bfl-sub').textContent='metres required';
+  document.getElementById('pr-bfl-bar').style.width=bflPct+'%';
+
+  const warn=document.getElementById('perf-warning');
+  const warnings=[];
+  if(da>5000)warnings.push('High density altitude — significant performance degradation');
+  if(rwyF>1)warnings.push('Contaminated/wet runway — increased stopping distance');
+  if(tow>mtowN)warnings.push('⚠ TOW exceeds MTOW — reduce load');
+  if(oat>40)warnings.push('High OAT — engine performance reduced');
+  if(warnings.length){warn.innerHTML=warnings.map(w=>`⚠ ${w}`).join('<br>');warn.classList.add('show');}
+  else{warn.classList.remove('show');}
+
+  document.getElementById('perf-result').classList.add('show');
+}
+
+// ── LOADING
+function showLoad(t){document.getElementById('loading-txt').textContent=t||'Loading…';document.getElementById('loading-overlay').classList.add('show');}
+function hideLoad(){document.getElementById('loading-overlay').classList.remove('show');}
+
+// ── SECTIONS
+function showSection(id){
+  ['dispatch','scheduled','completed','perf','airports','fleet','waypoints'].forEach(s=>{
+    const el=document.getElementById('section-'+s);
+    if(el)el.style.display='none';
+  });
+  const target=document.getElementById('section-'+id);
+  if(target)target.style.display=id==='dispatch'?'block':'block';
+  if(id==='dispatch')document.getElementById('section-dispatch').style.display='block';
+
+  document.querySelectorAll('.topbar-link').forEach(b=>b.classList.remove('active'));
+  const map={dispatch:0,scheduled:1,completed:2,perf:3,airports:4,fleet:5,waypoints:6};
+  const tabs=document.querySelectorAll('.topbar-link');
+  if(tabs[map[id]])tabs[map[id]].classList.add('active');
+
+  if(id==='scheduled')renderSchedGrid();
+  if(id==='completed')renderCompletedGrid();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+// ── STATIC PAGES
+function buildAirports(){
+  const dir=document.getElementById('apt-dir');
+  NATIONS.forEach(n=>{
+    const b=document.createElement('div');b.style.marginBottom='2rem';
+    b.innerHTML=`<div style="font-size:0.72rem;text-transform:uppercase;letter-spacing:0.1em;color:var(--muted);margin-bottom:0.8rem;padding-bottom:0.5rem;border-bottom:1px solid rgba(255,255,255,0.07)">${n.flag} ${n.name}</div>
+    <div style="display:flex;flex-wrap:wrap;gap:10px">
+      ${n.codes.map(c=>`<div style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);border-radius:10px;padding:12px 16px;cursor:pointer;transition:all 0.15s" onclick="document.getElementById('dep-select').value='${c}';refreshStrip();showSection('dispatch')">
+        <div style="font-weight:800;font-family:monospace">${c}</div>
+        <div style="font-size:0.72rem;color:var(--muted);margin-top:2px">${APT_INFO[c].city}</div>
+        <div style="font-size:0.68rem;color:var(--muted);margin-top:1px">${APT_INFO[c].type} · ${APT_INFO[c].elev}</div>
+      </div>`).join('')}
+    </div>`;
+    dir.appendChild(b);
+  });
+}
+
+function buildFleet(){
+  const g=document.getElementById('fleet-dir');
+  FLEET.forEach(ac=>{
+    const c=document.createElement('div');
+    c.style.cssText='background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:10px;padding:1rem;transition:all 0.15s';
+    c.innerHTML=`<div style="font-size:0.65rem;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:3px">${ac.m}</div>
+    <div style="font-size:0.9rem;font-weight:700">${ac.n}</div>
+    <div style="font-size:0.72rem;color:var(--muted);margin-top:4px">${ac.s} kts · ${ac.t}</div>`;
+    g.appendChild(c);
+  });
+}
+
+function buildWpPage(){
+  document.getElementById('wp-total').textContent=NAV_PTS.length;
+  renderWpPage(NAV_PTS);
+}
+
+function renderWpPage(list){
+  const g=document.getElementById('wp-pg-grid');g.innerHTML='';
+  document.getElementById('wp-shown').textContent=list.length;
+  list.forEach(w=>{
+    const c=document.createElement('div');
+    c.style.cssText='background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:6px;padding:7px 8px';
+    c.innerHTML=`<div style="font-size:0.74rem;font-weight:700;font-family:monospace">${w.id}</div><div style="font-size:0.57rem;color:var(--muted);margin-top:1px;text-transform:uppercase">${w.type}</div>`;
+    g.appendChild(c);
+  });
+}
+
+function filterPageWp(){
+  const q=document.getElementById('wp-pg-search').value.toUpperCase().trim();
+  renderWpPage(NAV_PTS.filter(w=>!q||w.id.includes(q)));
+}
+
+// ── INIT
+buildAirports();
+buildFleet();
+buildWpPage();
+refreshWpGrid();
+refreshStrip();
+showSection('dispatch');
+</script>
+</body>
+</html>
