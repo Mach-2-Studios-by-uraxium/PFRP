@@ -3,7 +3,35 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>PF Dispatch — Mach 2 Studios</title>
+  <title>PFRP — Mach 2 Studios</title>
+
+  <script>
+    (function() {
+      const img = new Image();
+      img.src = 'pfrp-logo.png'; 
+      img.crossOrigin = 'anonymous';
+      img.onload = function() {
+        const canvas = document.createElement('canvas');
+        const size = Math.min(img.width, img.height);
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        
+        ctx.beginPath();
+        ctx.arc(size / 2, size / 2, size / 2, 0, Math.PI * 2);
+        ctx.closePath();
+        ctx.clip();
+
+        ctx.drawImage(img, 0, 0, size, size);
+        
+        const link = document.createElement('link');
+        link.rel = 'icon';
+        link.type = 'image/png';
+        link.href = canvas.toDataURL('image/png');
+        document.head.appendChild(link);
+      };
+    })();
+  </script>
   <style>
     :root {
       --bg: #000000;
@@ -31,7 +59,6 @@
       overflow-x: hidden;
     }
 
-    /* BG ORBS */
     .bg-orbs {
       position: fixed; inset:0;
       pointer-events: none; z-index:0; overflow:hidden;
@@ -47,7 +74,6 @@
     @keyframes d2{from{transform:translate(0,0)}to{transform:translate(-60px,-80px)}}
     @keyframes d3{from{transform:translate(-50%,-50%)scale(1)}to{transform:translate(-50%,-50%)scale(1.4)}}
 
-    /* TOPBAR */
     .topbar {
       background: rgba(0,0,0,0.7);
       backdrop-filter: blur(30px);
@@ -94,7 +120,6 @@
     .pfec-btn img { width:18px;height:18px;border-radius:4px;object-fit:cover; }
     .pfec-btn:hover { background:rgba(255,255,255,0.12); border-color:rgba(255,255,255,0.25); }
 
-    /* LAYOUT */
     .dispatch-layout {
       display:grid;
       grid-template-columns:320px 1fr;
@@ -102,7 +127,6 @@
       position:relative; z-index:1;
     }
 
-    /* SIDEBAR */
     .sidebar {
       background: rgba(0,0,0,0.4);
       backdrop-filter: blur(20px);
@@ -128,7 +152,6 @@
     }
     .section-title::before { content:''; width:2px;height:10px;background:var(--white);border-radius:1px;opacity:0.4; }
 
-    /* GLASS FORM ELEMENTS */
     .form-row { display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-bottom:7px; }
     .form-row.s1 { grid-template-columns:1fr; }
     .form-row.s3 { grid-template-columns:1fr 1fr 1fr; }
@@ -163,7 +186,6 @@
     }
     .swap-btn:hover { background:var(--white);color:#000;border-color:var(--white); }
 
-    /* GLASS BUTTONS */
     .gbtn {
       width:100%; padding:11px;
       background:var(--white); color:#000;
@@ -186,7 +208,6 @@
     }
     .gbtn-out:hover { color:var(--text);border-color:rgba(255,255,255,0.25);background:rgba(255,255,255,0.05); }
 
-    /* WAYPOINT PICKER */
     .wp-picker-search {
       width:100%;
       background:rgba(255,255,255,0.04);
@@ -235,7 +256,6 @@
     .wp-item.ndb { border-color:rgba(255,255,255,0.1); color:#aaa; }
     .wp-item.none { grid-column:1/-1;text-align:center;color:var(--muted);font-size:0.72rem;padding:0.8rem; }
 
-    /* ROUTE STRIP */
     .route-strip {
       background:rgba(255,255,255,0.03);
       border:1px solid rgba(255,255,255,0.08);
@@ -257,10 +277,8 @@
     .rs-arr { color:var(--muted);font-size:0.62rem; }
     .rs-empty { color:var(--muted);font-size:0.7rem;font-style:italic; }
 
-    /* MAIN */
     .main-content { overflow-y:auto;background:transparent;position:relative;z-index:1; }
 
-    /* GLASS CARD */
     .gcard {
       background:linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));
       border:1px solid rgba(255,255,255,0.1);
@@ -303,7 +321,6 @@
     .dv.y { color:#dc4; }
     .dv.r { color:#f88; }
 
-    /* FUEL BARS */
     .fbar-wrap { margin:5px 0; }
     .fbar-lbl { display:flex;justify-content:space-between;font-size:0.68rem;color:var(--muted2);margin-bottom:3px; }
     .fbar-track { height:4px;background:rgba(255,255,255,0.06);border-radius:2px;overflow:hidden; }
@@ -313,7 +330,6 @@
     .fy { background:#dc4; }
     .fo { background:#f84; }
 
-    /* FLIGHT HEADER */
     .flight-header {
       background:linear-gradient(135deg,rgba(255,255,255,0.07),rgba(255,255,255,0.02));
       border:1px solid rgba(255,255,255,0.1);
@@ -337,7 +353,6 @@
     .fmeta-item .fmv { font-size:1.05rem;font-weight:700;color:var(--white); }
     .fmeta-item .fmu { font-size:0.65rem;color:var(--muted); }
 
-    /* STATUS BAR */
     .status-bar { display:flex;gap:6px;margin-bottom:1.2rem;flex-wrap:wrap; }
     .spill {
       display:flex; align-items:center; gap:5px;
@@ -350,11 +365,9 @@
     .spill-r { background:rgba(220,80,80,0.08);border-color:rgba(220,80,80,0.2);color:#f88; }
     .sdot { width:5px;height:5px;border-radius:50%;background:currentColor; }
 
-    /* PANELS */
     .panels { display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.2rem; }
     .panels3 { grid-template-columns:1fr 1fr 1fr; }
 
-    /* ROUTE TABLE */
     .rt-wrap { border-radius:14px;overflow:hidden;margin-bottom:1.2rem; }
     .rt-head {
       display:grid; grid-template-columns:80px 55px 60px 70px 70px 70px 70px;
@@ -379,7 +392,6 @@
     .rttime { color:var(--text);text-align:right;font-weight:600; }
     .rtfuel { color:#6dc;text-align:right;font-size:0.74rem; }
 
-    /* WX */
     .wx-raw {
       font-family:'Courier New',monospace; font-size:0.75rem;
       color:var(--text); line-height:1.7; word-break:break-all;
@@ -393,7 +405,6 @@
     .wxitem .wxv { font-size:0.83rem;font-weight:600; }
     .cat-v { color:#6dc; } .cat-m { color:#dc4; } .cat-i { color:#f84; } .cat-l { color:#f88; }
 
-    /* OFP RAW */
     .ofp-raw {
       background:rgba(0,0,0,0.5); border:1px solid rgba(255,255,255,0.08);
       border-radius:14px; padding:1.4rem;
@@ -406,7 +417,6 @@
     .ofp-acc { color:rgba(255,255,255,0.6); }
     .ofp-grn { color:#6dc; }
 
-    /* EMPTY STATE */
     .empty-state {
       display:flex; flex-direction:column;
       align-items:center; justify-content:center;
@@ -417,11 +427,9 @@
     .empty-title { font-size:1rem;font-weight:700;color:var(--muted2);margin-bottom:0.5rem; }
     .empty-sub { font-size:0.83rem;max-width:300px;line-height:1.7; }
 
-    /* OFP WRAP */
     .ofp-wrap { padding:1.6rem;display:none; }
     .ofp-wrap.visible { display:block; }
 
-    /* ACTION BAR */
     .action-bar { display:flex;gap:8px;margin-bottom:1.2rem;flex-wrap:wrap; }
     .abtn {
       display:flex; align-items:center; gap:6px;
@@ -436,7 +444,6 @@
     .abtn.primary { background:var(--white);color:#000;border-color:var(--white); }
     .abtn.primary:hover { background:#e0e0e0; }
 
-    /* LOADING */
     .loading-overlay {
       display:none; position:fixed; inset:0;
       background:rgba(0,0,0,0.8); backdrop-filter:blur(6px);
@@ -452,7 +459,6 @@
     @keyframes spin{to{transform:rotate(360deg)}}
     .loader-txt { color:var(--muted2);font-size:0.83rem; }
 
-    /* SCHEDULED FLIGHTS */
     .sched-wrap { padding:1.6rem;position:relative;z-index:1; }
     .sched-grid { display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-top:1.2rem; }
 
@@ -506,7 +512,6 @@
       font-size:1.2rem;opacity:0.3;
     }
 
-    /* NEW SCHEDULE MODAL */
     .modal-overlay {
       display:none;position:fixed;inset:0;
       background:rgba(0,0,0,0.85);
@@ -525,8 +530,6 @@
     .modal-title { font-size:1.1rem;font-weight:800;margin-bottom:1.2rem; }
     .modal-footer { display:flex;gap:8px;margin-top:1.2rem; }
 
-    /* TOPBAR PERF & SCHED */
-    /* TAKEOFF PERF */
     .perf-wrap { padding:1.6rem;position:relative;z-index:1; }
     .perf-grid { display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-top:1.2rem; }
     .perf-result {
@@ -550,7 +553,6 @@
     }
     .perf-warning.show { display:block; }
 
-    /* NOTAM / PIREP SECTION */
     .notam-item {
       background:rgba(255,255,255,0.03);
       border:1px solid rgba(255,255,255,0.07);
@@ -1112,9 +1114,7 @@
 </div>
 
 <script>
-// ══════════════════════════════════════
-// DATA
-// ══════════════════════════════════════
+
 const NODES={
   LCLK:{x:92.5,y:100.5,type:'AIRPORT',name:'Larnaca'},
   LCPH:{x:87.44,y:102.59,type:'AIRPORT',name:'Paphos'},
@@ -1257,7 +1257,6 @@ const FLEET=[
 
 const NAV_PTS=Object.entries(NODES).filter(([k,v])=>v.type!=='AIRPORT').map(([k,v])=>({id:k,...v})).sort((a,b)=>a.id.localeCompare(b.id));
 
-// STATE
 let routeMiddle=[];
 let wpType='ALL';
 let schedFlights=JSON.parse(localStorage.getItem('pf_sched')||'[]');
@@ -1265,14 +1264,12 @@ let lastOFP=null;
 
 const PF_SCALE=0.364;
 
-// HELPERS
 const md=(a,b)=>Math.sqrt((b.x-a.x)**2+(b.y-a.y)**2);
 const rnd=(a,b)=>a+Math.random()*(b-a);
 function fmt(m){if(m<1)return'<1m';if(m<60)return Math.round(m)+'m';return Math.floor(m/60)+'h '+Math.round(m%60)+'m';}
 function nowUTC(){return new Date().toUTCString().replace(' GMT','Z');}
 function bearing(a,b){const dx=b.x-a.x,dy=b.y-a.y;let deg=Math.round(Math.atan2(dx,-dy)*180/Math.PI);if(deg<0)deg+=360;return deg.toString().padStart(3,'0')+'°';}
 
-// ── WP GRID
 function setWpType(btn){document.querySelectorAll('.wtt').forEach(b=>b.classList.remove('on'));btn.classList.add('on');wpType=btn.dataset.t;refreshWpGrid();}
 function refreshWpGrid(){
   const q=document.getElementById('wp-sb-search').value.toUpperCase().trim();
@@ -1288,7 +1285,6 @@ function refreshWpGrid(){
   });
 }
 
-// ── ROUTE STRIP
 function refreshStrip(){
   const dep=document.getElementById('dep-select').value;
   const arr=document.getElementById('arr-select').value;
@@ -1307,7 +1303,6 @@ function refreshStrip(){
 
 function swapApts(){const d=document.getElementById('dep-select'),a=document.getElementById('arr-select');const t=d.value;d.value=a.value;a.value=t;refreshStrip();}
 
-// ── GENERATE OFP
 function generateOFP(){
   const dep=document.getElementById('dep-select').value;
   const arr=document.getElementById('arr-select').value;
@@ -1360,7 +1355,6 @@ function renderOFP(d){
   document.getElementById('hdr-fl').textContent='FL'+d.fl;
   document.getElementById('gen-time').textContent=nowUTC();
 
-  // status
   const sb=document.getElementById('status-bar');sb.innerHTML='';
   [{cls:'spill-g',t:'Route Valid'},{cls:'spill-w',t:`FL${d.fl} / ${d.kts} kts`},
    {cls:d.fPct<90?'spill-g':'spill-y',t:`Fuel ${d.fPct}% cap`},
@@ -1369,7 +1363,6 @@ function renderOFP(d){
    {cls:'spill-w',t:`${d.keys.length} fixes`}
   ].forEach(p=>{const e=document.createElement('div');e.className='spill '+p.cls;e.innerHTML=`<span class="sdot"></span>${p.t}`;sb.appendChild(e);});
 
-  // panels r1
   document.getElementById('panels-r1').innerHTML=`
     <div class="gcard">
       <div class="gcard-header"><span class="gcard-title">Flight Times</span><span class="gbadge gbadge-w">${fmt(d.totalTime)}</span></div>
@@ -1401,7 +1394,6 @@ function renderOFP(d){
       </div>
     </div>`;
 
-  // panels r2
   document.getElementById('panels-r2').innerHTML=`
     <div class="gcard">
       <div class="gcard-header"><span class="gcard-title">Weights</span></div>
@@ -1433,7 +1425,6 @@ function renderOFP(d){
       </div>
     </div>`;
 
-  // route table
   document.getElementById('rt-count').textContent=`${d.keys.length} fixes`;
   const tbody=document.getElementById('rt-body');tbody.innerHTML='';
   let cDist=0,cTime=0,cFuel=0;
@@ -1453,7 +1444,6 @@ function renderOFP(d){
     tbody.appendChild(row);
   });
 
-  // weather
   document.getElementById('wx-panels').innerHTML=`
     <div class="gcard">
       <div class="gcard-header"><span class="gcard-title">DEP Weather — ${d.dep}</span><span class="gbadge gbadge-g">VFR</span></div>
@@ -1484,7 +1474,6 @@ function renderOFP(d){
       </div>
     </div>`;
 
-  // NOTAMs
   const notams=genNOTAMs(d.dep,d.arr);
   document.getElementById('notam-panel').innerHTML=notams.map(n=>`
     <div class="notam-item">
@@ -1492,7 +1481,6 @@ function renderOFP(d){
       <strong>${n.title}</strong> — ${n.body}
     </div>`).join('');
 
-  // raw OFP
   document.getElementById('ofp-raw-text').innerHTML=
 `<span class="ofp-hi">═══════════════════════════════════════════════════
   PROJECT FLIGHT DISPATCH — OPERATIONAL FLIGHT PLAN
@@ -1573,7 +1561,6 @@ function copyOFP(){
   navigator.clipboard.writeText(t).then(()=>alert('OFP copied!'));
 }
 
-// ── SCHEDULED FLIGHTS
 function saveSched(){localStorage.setItem('pf_sched',JSON.stringify(schedFlights));}
 
 function renderSchedGrid(){
@@ -1674,7 +1661,6 @@ function schedFromCurrent(){
   document.getElementById('sm-fltno').value=lastOFP.fltNo;
 }
 
-// ── TAKEOFF PERFORMANCE
 function calcPerf(){
   const acRaw=document.getElementById('perf-ac').value;
   const [acType,mtow,acClass,baseFL]=acRaw.split('|');
@@ -1687,14 +1673,11 @@ function calcPerf(){
   const rwyF=parseFloat(document.getElementById('perf-rwy').value)||1;
   const aiF=parseFloat(document.getElementById('perf-ai').value)||0;
 
-  // pressure alt
   const pa=Math.round(elev+(1013-qnh)*27);
-  // density alt
   const isa=15-(elev*0.00198);
   const daTmp=oat-isa;
   const da=Math.round(pa+daTmp*120);
 
-  // base V1/VR/V2 based on MTOW & acClass
   const mtowN=parseFloat(mtow);
   const wRatio=Math.min(1,tow/mtowN);
   const baseSpeeds={ga:[55,60,65,80],bizjet:[90,100,110,130],turboprop:[85,95,105,120],narrow:[130,140,150,145],wide:[145,155,165,155],military:[140,155,165,160]};
@@ -1710,15 +1693,12 @@ function calcPerf(){
   const v2=Math.round(sp[2]*wFact*altFact*flapFact*hwFact);
   const vapp=Math.round(sp[3]*wFact*flapFact);
 
-  // BFL
   const baseBFL=parseFloat(baseFL);
   const bfl=Math.round(baseBFL*wFact*altFact*(1/flapFact)*rwyF*(1/hwFact)*(1/aiPenalty));
   const bflPct=Math.min(100,Math.round((bfl/5000)*100));
 
-  // climb gradient (%)
   const cg=(5-wRatio*2-daTmp*0.05).toFixed(1);
 
-  // flex temp
   const flex=Math.round(oat+15*(1-wRatio));
 
   document.getElementById('pr-v1').textContent=v1+' kts';
@@ -1745,11 +1725,9 @@ function calcPerf(){
   document.getElementById('perf-result').classList.add('show');
 }
 
-// ── LOADING
 function showLoad(t){document.getElementById('loading-txt').textContent=t||'Loading…';document.getElementById('loading-overlay').classList.add('show');}
 function hideLoad(){document.getElementById('loading-overlay').classList.remove('show');}
 
-// ── SECTIONS
 function showSection(id){
   ['dispatch','scheduled','completed','perf','airports','fleet','waypoints'].forEach(s=>{
     const el=document.getElementById('section-'+s);
@@ -1769,7 +1747,6 @@ function showSection(id){
   window.scrollTo({top:0,behavior:'smooth'});
 }
 
-// ── STATIC PAGES
 function buildAirports(){
   const dir=document.getElementById('apt-dir');
   NATIONS.forEach(n=>{
@@ -1819,7 +1796,6 @@ function filterPageWp(){
   renderWpPage(NAV_PTS.filter(w=>!q||w.id.includes(q)));
 }
 
-// ── INIT
 buildAirports();
 buildFleet();
 buildWpPage();
